@@ -12,9 +12,8 @@ matplotlib = "*"
 sklearn = "*"
 scipy = "*"
 scikit-image = "*"
-opencv = "*"
-opencv-python = "*"
 img2pdf = "*"
+opencv-python = "*"
 
 [requires]
-python_version = "3.7"
+python_version = "3.6"
