@@ -23,3 +23,11 @@ def write_img_to_pdf(out_file_path, img):
         with open(out_file_path, "wb") as out_file:
             out_file.write(img2pdf.convert(os.path.join(tmp_dir, 'tmp_img.jpeg')))
         print(f'Stored image pdf at {out_file_path}.')
+
+
+def fig_to_pdf(out_dir_path, filename, fig):
+    """Stores a matplotlib figure to file. out_file_path should be full path e.g. /path/to/dir/output.pdf."""
+    assert filename.split('.')[-1] == 'pdf', 'File ending should be .pdf'
+
+    # TODO: Scale stuff should happen here to ensure correct scaling of output pdf w.r.t. real images.
+    fig.savefig(os.path.join(out_dir_path, filename))

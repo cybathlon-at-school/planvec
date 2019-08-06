@@ -21,13 +21,41 @@ def thresh_img(img, thresh_val, max_val, thresh_type=cv2.THRESH_BINARY):
     return img
 
 
-def filter_by_hsv_range(img, range_start, range_end):
+def filter_keep_by_hsv_range(img, range_start, range_end):
+    img = img.copy()
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-
     mask = cv2.inRange(hsv, np.array(range_start), np.array(range_end))
+    planvec.vizualization.imshow(mask, figsize=(10, 10))
     filtered_img = cv2.bitwise_and(img, img, mask=mask)
-    planvec.vizualization.imshow(mask)
     return filtered_img
+
+
+def filter_keep_multi_ranges(img, ranges_start, ranges_end):
+    img = img.copy()
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    masks = []
+    for start, end in zip(ranges_start, ranges_end):
+        mask = cv2.inRange(hsv, np.array(start), np.array(end))
+        masks.append(mask)
+    final_mask = sum(masks)
+    planvec.vizualization.imshow(final_mask, figsize=(10, 10))
+    filtered_img = cv2.bitwise_and(img, img, mask=final_mask)
+    return filtered_img
+
+
+def filter_out_by_hsv_range(img, range_start, range_end):
+    img = img.copy()
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    mask = cv2.inRange(hsv, np.array(range_start), np.array(range_end))
+    planvec.vizualization.imshow(mask, figsize=(10, 10))
+    filtered_img = cv2.bitwise_not(img, img, mask=mask)
+    return filtered_img
+
+
+def white_pixels_to_black(img):
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    ret, thresh = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY)
+    img[thresh == 255] = 0
 
 
 def adaptive_thresh_img(img):
