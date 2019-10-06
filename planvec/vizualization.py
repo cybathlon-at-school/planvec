@@ -1,7 +1,10 @@
+import cv2 as cv
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import numpy as np
 import skimage
+
+from planvec import img_proc
 
 
 def plot_contours(contours, axis='off', **kwargs):
@@ -16,26 +19,27 @@ def plot_contours(contours, axis='off', **kwargs):
     return plt.gcf()
 
 
-def imshow(img, axis='off', **kwargs):
+def imshow(img, axis='off', img_space='RGB', **kwargs):
     setup_figure(**kwargs)
     plt.axis(axis)
-    if len(img.shape) == 2:  # Only grey scale values
-        plt.imshow(img, cmap='gray')
+    img_copy = img_proc.copy_img(img)
+    if len(img_copy.shape) == 2:  # Only grey scale values
+        plt.imshow(img_copy, cmap='gray')
     else:
-        plt.imshow(img)
+        assert img_space in ['BGR', 'RGB'], 'Only RGB and BGR image spaces are allowed for this function.'
+        if img_space == 'BGR':  # Needs conversion to RGB for matplotlib
+            img_copy = cv.cvtColor(img_copy, cv.COLOR_BGR2RGB)
+        plt.imshow(img_copy)
 
 
 def plot_image_regions(labelled_image, regionprops, **kwargs):
-    setup_figure(**kwargs)
-    plt.imshow(labelled_image)
+    imshow(labelled_image, img_space='BGR', **kwargs)
 
     for region in regionprops:
         minr, minc, maxr, maxc = region.bbox
         rect = mpatches.Rectangle((minc, minr), maxc - minc, maxr - minr,
                                   fill=False, edgecolor='cyan', linewidth=1.5)
         plt.gca().add_patch(rect)
-
-    plt.gca().set_axis_off()
 
 
 def setup_figure(**kwargs):

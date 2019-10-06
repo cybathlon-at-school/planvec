@@ -1,16 +1,21 @@
 import os
 import tempfile
 import img2pdf
+import cv2 as cv
 from PIL import Image
 import matplotlib.pyplot as plt
 
 
-def read_img(dir_path, name):
+def read_img(dir_path, name, to_bgr=False):
     """Reads an image from file.
     Usual formats such as jpg, png, ... supported,
     see https://pillow.readthedocs.io/en/3.0.x/handbook/image-file-formats.html for comprehensive list.
     """
-    return plt.imread(os.path.join(dir_path, name))
+    rgb_img = plt.imread(os.path.join(dir_path, name))
+    if to_bgr:
+        return cv.cvtColor(rgb_img, cv.COLOR_RGB2BGR)
+    else:
+        return rgb_img
 
 
 def write_img_to_pdf(out_file_path, img):
