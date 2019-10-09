@@ -50,4 +50,4 @@ class HSVColorRange:
 BLUE = HSVColorRange([99, 66, 145], [105, 255, 255])
 RED_LOW = HSVColorRange([0, 71, 71], [5, 255, 255])
 RED_HIGH = HSVColorRange([170, 60, 60], [179, 255, 255])
-GREEN = HSVColorRange([53, 85, 87], [70, 255, 255])
+GREEN = HSVColorRange([43, 170, 87], [57, 255, 255])

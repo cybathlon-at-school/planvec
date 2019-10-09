@@ -14,6 +14,7 @@ scipy = "*"
 scikit-image = "*"
 img2pdf = "*"
 opencv-python = "*"
+imutils = "*"
 
 [requires]
-python_version = "3.6"
+python_version = "3.7.0"

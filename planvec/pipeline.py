@@ -1,4 +1,5 @@
 import skimage
+import matplotlib.pyplot as plt
 
 from planvec import img_proc
 from planvec import color_range
@@ -8,7 +9,7 @@ HELPER_COLOR_RANGES = [color_range.BLUE, color_range.RED_HIGH, color_range.RED_L
 DEFAULT_FIG_SIZE = (13, 8)
 
 
-def pipeline(img, visualize_steps=False, verbose=False):
+def run_pipeline(img, visualize_steps=False, verbose=False):
     """Full processing pipeline for an incoming image producing end-to-end the final figure which then can be
     stored as a pdf."""
 
@@ -19,7 +20,7 @@ def pipeline(img, visualize_steps=False, verbose=False):
         vizualization.imshow(img, axis='off', figsize=DEFAULT_FIG_SIZE, img_space='BGR')
 
     # Process image, stretch to dots, and filter out helper colors
-    img = img_proc.rectify_wrt_red_dots(img, (1200, 700), show_plot=visualize_steps)
+    img = img_proc.rectify_wrt_red_dots(img, (600, 350), show_plot=visualize_steps, verbose=verbose)
     img = img_proc.add_gaussian_blur(img, 5, 5)
     img = img_proc.filter_multi_hsv_ranges_to_white(img, HELPER_COLOR_RANGES)
     if visualize_steps:
@@ -35,7 +36,7 @@ def pipeline(img, visualize_steps=False, verbose=False):
     if verbose:
         print(f'Found {n} regions.')
     img_labelled_proc, filtered_regions = img_proc.filter_regions(labelled_img, regionprops=regions,
-                                                                  area_threshold=50000, verbose=verbose)
+                                                                  area_threshold=10000, verbose=verbose)
     if verbose:
         print(f'After filtering, {len(filtered_regions)} are left.')
     if visualize_steps:
@@ -51,5 +52,6 @@ def pipeline(img, visualize_steps=False, verbose=False):
     for contour in contours:
         approx_contours.append(skimage.measure.approximate_polygon(contour.copy(), tolerance=1))
     output_fig = vizualization.plot_contours(approx_contours, axis='off', color='red', linewidth=0.5, figsize=DEFAULT_FIG_SIZE)
-
+    output_fig.set_size_inches(6, 5)
+    #plt.show()
     return output_fig

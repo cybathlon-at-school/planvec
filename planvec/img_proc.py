@@ -8,6 +8,8 @@ from planvec.color_range import HSVColorRange
 
 from typing import List
 
+DEBUG_BARS = 5 * '-'
+
 
 def copy_img(img):
     return np.copy(img)
@@ -34,6 +36,7 @@ def invert_mask(mask):
 
 
 def create_hsv_range_mask(img, hsv_color_range: HSVColorRange):
+    """Based on a HSVColorRange, create a mask for which pixels in an input image are in this range."""
     hsv = cv.cvtColor(img, cv.COLOR_BGR2HSV)
     return cv.inRange(hsv, np.array(hsv_color_range.start), np.array(hsv_color_range.end))
 
@@ -46,12 +49,14 @@ def filter_keep_by_hsv_range(img, hsv_color_range: HSVColorRange):
 
 
 def filter_keep_multi_ranges(img, hsv_color_ranges: List[HSVColorRange]):
-    masks = [create_hsv_range_mask(img, color_range) for color_range in hsv_color_ranges]
+    """Same as filter_keep_by_hsv_range but for multiple hsv color ranges."""
+    masks = [create_hsv_range_mask(img, hsv_color_range) for hsv_color_range in hsv_color_ranges]
     final_mask = sum(masks)
     return cv.bitwise_and(img, img, mask=final_mask)
 
 
 def filter_by_hsv_range_to_white(img, hsv_color_range: HSVColorRange):
+    """Pixels of the input image will be set to white is they are within the hsv color range."""
     img = copy_img(img)
     mask = planvec.img_proc.create_hsv_range_mask(img, hsv_color_range)
     img[mask > 0] = 255
@@ -59,13 +64,15 @@ def filter_by_hsv_range_to_white(img, hsv_color_range: HSVColorRange):
 
 
 def filter_multi_hsv_ranges_to_white(img, hsv_color_ranges: List[HSVColorRange]):
+    """Same as filter_by_hsv_range_to_white but for multiple hsv color ranges."""
     img = copy_img(img)
-    for color_range in hsv_color_ranges:
-        img = filter_by_hsv_range_to_white(img, color_range)
+    for hsv_color_range in hsv_color_ranges:
+        img = filter_by_hsv_range_to_white(img, hsv_color_range)
     return img
 
 
 def white_pixels_to_black(img):
+    """#TODO: Add docstring."""
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     ret, thresh = cv.threshold(gray, 100, 255, cv.THRESH_BINARY)
     img[thresh == 255] = 0
@@ -159,7 +166,7 @@ def warp_image(img, src_points, dst_points, final_size, show_plot=False):
     return warped_img
 
 
-def rectify_wrt_red_dots(img, dst_shape, show_plot=False):
+def rectify_wrt_red_dots(img, dst_shape, show_plot=False, verbose=False):
     """This function assumes we have four red dots in an image which represent the convex hull in a rectangular
     shape. When taking an image the camera is likely to take the picture a little bit from the side and distortion
     effects may take place. This function rectifies the image such that the four red dots form the outer boundary
@@ -177,11 +184,25 @@ def rectify_wrt_red_dots(img, dst_shape, show_plot=False):
     img_red = filter_keep_multi_ranges(img, [color_range.RED_LOW, color_range.RED_HIGH])
     img_labelled_proc, filtered_regions = planvec.img_proc.find_regions(img_red, 2, 10)
     corner_centroids = [[region.centroid[1], region.centroid[0]] for region in filtered_regions]
-    new_corners = [[0, 0], [dst_shape[0], 0], [0, dst_shape[1]], [dst_shape[0], dst_shape[1]]]
-
-    assert len(corner_centroids) == 4, f'Corner extraction failed. Extracted {len(corner_centroids)} but 4 expected.'
-    warped = warp_image(img, corner_centroids, new_corners, dst_shape, show_plot=show_plot)
-    return warped
+    """
+    We need to sort corner_centroids such that they map correctly to the new corners.
+    1 - 3
+    |   |
+    2 - 4
+    Therefore we first sort by lateral x-direction and then by vertical y-direction.
+    """
+    corner_centroids.sort(key=lambda point: (point[0], point[1]))
+    new_corners = [[0, 0], [0, dst_shape[1]], [dst_shape[0], 0], [dst_shape[0], dst_shape[1]]]
+    # assert len(corner_centroids) == 4, f'Corner extraction failed. Extracted {len(corner_centroids)} but 4 expected.'
+    if len(corner_centroids) == 4:
+        warped = warp_image(img, corner_centroids, new_corners, dst_shape, show_plot=show_plot)
+        if verbose:
+            print(DEBUG_BARS)
+            print(f'Warping image wrt corners. Found {len(corner_centroids)} corners at positions\n'
+                  f'{np.array(corner_centroids).round(decimals=2)}\nMapped to \n{np.array(new_corners)}.\nNew image size: {dst_shape}.')
+        return warped
+    else:
+        return img
 
 
 def live_color_filter(use_camera=True, img=None):

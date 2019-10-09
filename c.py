@@ -2,6 +2,8 @@ import cv2
 import sys
 import numpy as np
 
+# TODO: Clean this mess up
+
 def nothing(x):
     pass
 
@@ -36,7 +38,7 @@ phMin = psMin = pvMin = phMax = psMax = pvMax = 0
 if useCamera:
     cap = cv2.VideoCapture(0)
     # Wait longer to prevent freeze for videos.
-    waitTime = 330
+    waitTime = 33
 else:
     img = img
     output = img
