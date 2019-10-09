@@ -7,7 +7,8 @@ import matplotlib.pyplot as plt
 
 
 def read_img(dir_path, name, to_bgr=False):
-    """Reads an image from file.
+    """
+    Reads an image from file.
     Usual formats such as jpg, png, ... supported,
     see https://pillow.readthedocs.io/en/3.0.x/handbook/image-file-formats.html for comprehensive list.
     """
@@ -16,6 +17,11 @@ def read_img(dir_path, name, to_bgr=False):
         return cv.cvtColor(rgb_img, cv.COLOR_RGB2BGR)
     else:
         return rgb_img
+
+
+def read_img_full_path(file_path, to_bgr=False):
+    """Reads an image from file for a given full file path."""
+    return read_img(os.path.split(file_path)[0], os.path.split(file_path)[1], to_bgr)
 
 
 def write_img_to_pdf(out_file_path, img):
