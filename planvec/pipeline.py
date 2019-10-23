@@ -16,7 +16,6 @@ DEFAULT_FIG_SIZE = (13, 8)
 def run_pipeline(img, visualize_steps=False, verbose=False, return_np_arr=True):
     """Full processing pipeline for an incoming image producing end-to-end the final figure which then can be
     stored as a pdf."""
-
     if verbose:
         print(f'Input image shape: {img.shape}')
 
