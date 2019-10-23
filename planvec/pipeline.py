@@ -1,15 +1,19 @@
+import numpy as np
 import skimage
 import matplotlib.pyplot as plt
+from PIL.ImageQt import ImageQt
+import time
 
 from planvec import img_proc
 from planvec import color_range
 from planvec import vizualization
+from planvec import conversions
 
 HELPER_COLOR_RANGES = [color_range.BLUE, color_range.RED_HIGH, color_range.RED_LOW]
 DEFAULT_FIG_SIZE = (13, 8)
 
 
-def run_pipeline(img, visualize_steps=False, verbose=False):
+def run_pipeline(img, visualize_steps=False, verbose=False, return_np_arr=True):
     """Full processing pipeline for an incoming image producing end-to-end the final figure which then can be
     stored as a pdf."""
 
@@ -18,7 +22,6 @@ def run_pipeline(img, visualize_steps=False, verbose=False):
 
     if visualize_steps:
         vizualization.imshow(img, axis='off', figsize=DEFAULT_FIG_SIZE, img_space='BGR')
-
     # Process image, stretch to dots, and filter out helper colors
     img = img_proc.rectify_wrt_red_dots(img, (600, 350), show_plot=visualize_steps, verbose=verbose)
     img = img_proc.add_gaussian_blur(img, 5, 5)
@@ -26,7 +29,7 @@ def run_pipeline(img, visualize_steps=False, verbose=False):
     if visualize_steps:
         vizualization.imshow(img, axis='off', figsize=DEFAULT_FIG_SIZE, img_space='BGR')
     img = img_proc.img_to_greyscale(img)
-    img = img_proc.thresh_img(img, 200, 255)
+    img = img_proc.thresh_img(img, 150, 255)
     if visualize_steps:
         vizualization.imshow(img, axis='off', figsize=DEFAULT_FIG_SIZE, img_space='BGR')
 
@@ -51,7 +54,20 @@ def run_pipeline(img, visualize_steps=False, verbose=False):
     approx_contours = []
     for contour in contours:
         approx_contours.append(skimage.measure.approximate_polygon(contour.copy(), tolerance=1))
+    
     output_fig = vizualization.plot_contours(approx_contours, axis='off', color='red', linewidth=0.5, figsize=DEFAULT_FIG_SIZE)
     output_fig.set_size_inches(6, 5)
-    #plt.show()
+    
+    # Important: Close the figure, else a shitton of figures are staying open
+    #            which will fill up memory.
+    pil_img = conversions.fig2img(output_fig)
+    plt.close(output_fig)
+    return ImageQt(pil_img)
+    """
+    # plt.show()
+    print(plt.get_fignums())
+    if return_np_arr:
+        return conversions.fig2img(output_fig)
+        plt.close('all')
     return output_fig
+    """

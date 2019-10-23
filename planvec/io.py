@@ -1,6 +1,6 @@
 import os
 import tempfile
-import img2pdf
+#import img2pdf
 import cv2 as cv
 from PIL import Image
 import matplotlib.pyplot as plt
@@ -34,6 +34,34 @@ def write_img_to_pdf(out_file_path, img):
         with open(out_file_path, "wb") as out_file:
             out_file.write(img2pdf.convert(os.path.join(tmp_dir, 'tmp_img.jpeg')))
         print(f'Stored image pdf at {out_file_path}.')
+
+
+def scale_image(input_image_path,
+            output_image_path,
+            width=None,
+            height=None):
+    original_image = Image.open(input_image_path)
+    w, h = original_image.size
+    print('Scaling image. The original image size is {wide} wide x {height} '
+          'high'.format(wide=w, height=h))
+
+    if width and height:
+        max_size = (width, height)
+    elif width:
+        max_size = (width, h)
+    elif height:
+        max_size = (w, height)
+    else:
+        # No width or height specified
+        raise RuntimeError('Width or height required!')
+
+    original_image.thumbnail(max_size, Image.ANTIALIAS)
+    original_image.save(output_image_path)
+
+    scaled_image = Image.open(output_image_path)
+    width, height = scaled_image.size
+    print('The scaled image size is {wide} wide x {height} '
+          'high'.format(wide=width, height=height))
 
 
 def fig_to_pdf(out_dir_path, filename, fig):

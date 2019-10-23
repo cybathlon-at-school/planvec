@@ -5,7 +5,7 @@ from planvec import gui
 # import the necessary packages
 import tkinter as tk
 from planvec.gui import PlanvecGui
-from imutils.video import VideoStream
+# from imutils.video import VideoStream, WebcamVideoStream
 import argparse
 import time
 
@@ -34,7 +34,13 @@ def parse_arguments():
     ap.add_argument("-d", "--debug-input", type=str2bool, nargs='?',
                     const=True, default=False,
                     help="Use debug input image.")
+    ap.add_argument("-v", "--verbose", type=str2bool, nargs='?',
+                    const=True, default=False,
+                    help="")
+    ap.add_argument("-t", "--test-data", default="solid_lines.jpg",
+                    help="Name of the test image in test/assets to use as debug input.")
     args = vars(ap.parse_args())
+    print(args)
     return args
 
 
@@ -52,7 +58,7 @@ def main():
 
     root = tk.Tk()
     app = PlanvecGui(master=root, video_stream=video_stream, output_path=args["output"],
-                     edge_mode=args['edge'], debug_input=args['debug_input'])
+                     edge_mode=args['edge'], debug_input=args['debug_input'], test_img=args['test_data'])
     app.mainloop()
 
 
