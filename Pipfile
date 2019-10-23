@@ -4,6 +4,8 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+flake8 = "*"
+autopep8 = "*"
 
 [packages]
 jupyter = "*"
@@ -15,6 +17,9 @@ scikit-image = "*"
 img2pdf = "*"
 opencv-python = "*"
 imutils = "*"
+pyqt5 = "*"
+dotmap = "*"
+qimage2ndarray = "*"
 
 [requires]
-python_version = "3.7.0"
+python_version = "3.6"

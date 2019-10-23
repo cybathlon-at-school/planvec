@@ -2,6 +2,7 @@ import os
 import cv2
 import tkinter as tk
 from PIL import Image
+import matplotlib.pyplot as plt
 
 import threading
 import datetime
@@ -13,8 +14,6 @@ from planvec import conversions
 from planvec.common import PROJECT_ROOT_PATH
 
 ASSETS_DIR = os.path.join(PROJECT_ROOT_PATH, 'test', 'assets')
-INPUT_IMAGE = 'solid_lines.jpg'
-DEBUG_INPUT_IMG = planvec.io.read_img(ASSETS_DIR, INPUT_IMAGE, to_bgr=True)
 PANEL_POSITIONS = {'video': 'left', 'processed': 'right'}
 
 
@@ -22,7 +21,7 @@ class PlanvecGui(tk.Frame):
     """Tkinter-based GUI for the planvec package. Starts the webcam and let's the user take a picture to run the
     planvec processing pipeline over the image."""
 
-    def __init__(self, master, video_stream, output_path, edge_mode, debug_input):
+    def __init__(self, master, video_stream, output_path, edge_mode, debug_input, test_img):
         """Constructor for PlanvecGui class.
         Arguments
         ---------
@@ -38,6 +37,9 @@ class PlanvecGui(tk.Frame):
         self.debug_input = debug_input
         self.thread = None
         self.stop_event = None
+        print(ASSETS_DIR)
+        print(test_img)
+        self.debug_img = planvec.io.read_img(ASSETS_DIR, test_img, to_bgr=True)
 
         # initialize panels, buttons and such
         self.panel_content = {'video': None, 'processed': None}
@@ -59,11 +61,11 @@ class PlanvecGui(tk.Frame):
     def setup_buttons(self):
         buttons = {}
         buttons['process'] = tk.Button(self, text="Process!", command=self.process)
-        buttons['process'].pack(fill="both", expand="yes", padx=10, pady=10)
+        buttons['process'].grid(row=0, column=0)
         buttons['edge_mode'] = tk.Button(self, text="Canny Toggle!", command=self.toggle_edge_mode)
-        buttons['edge_mode'].pack(fill="both", expand="yes", padx=10, pady=10)
+        buttons['edge_mode'].grid(row=0, column=1)
         buttons['debug_mode'] = tk.Button(self, text="Debug Toggle!", command=self.toggle_debug_mode)
-        buttons['debug_mode'].pack(fill="both", expand="yes", padx=10, pady=10)
+        buttons['debug_mode'].grid(row=0, column=2)
         return buttons
 
     def video_loop(self):
@@ -82,6 +84,7 @@ class PlanvecGui(tk.Frame):
                     self.panel_content['processed'] = conversions.imgpil2imgtk(conversions.np_ndarray2imgpil(edged).resize((600, 350), Image.ANTIALIAS))
                 else:
                     processed_img = conversions.fig2img(pipeline.run_pipeline(self.current_frame, verbose=False))
+                    plt.clf()
                     if self.debug_input:
                         processed_img = processed_img.resize((600, 350), Image.ANTIALIAS)
                     self.panel_content['processed'] = conversions.imgpil2imgtk(processed_img)
@@ -91,6 +94,7 @@ class PlanvecGui(tk.Frame):
                         self.init_panel(panel_key, self.panel_content[panel_key], PANEL_POSITIONS[panel_key])
                     else:
                         self.update_panel(panel_key, self.panel_content[panel_key])
+                plt.close('all')
         except RuntimeError as e:
             print(f'RunTime error caught in video_loop: {e}')
 
@@ -115,6 +119,7 @@ class PlanvecGui(tk.Frame):
         output_fig = pipeline.run_pipeline(self.current_frame, verbose=True)
         output_path = self.construct_file_name_from_timestamp()
         output_fig.savefig(output_path)
+        output_fig.close()
         print(f'Stored processed fig at {output_path}.')
 
     def toggle_edge_mode(self):
@@ -136,6 +141,6 @@ class PlanvecGui(tk.Frame):
     def current_frame(self):
         """Returns a BGR image."""
         if self.debug_input:
-            return DEBUG_INPUT_IMG
+            return self.debug_img
         else:
             return self.video_stream.read()

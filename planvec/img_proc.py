@@ -1,7 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import skimage
+import skimage.measure
 import cv2 as cv
+from functools import reduce
+import operator
+import math
+
 import planvec.vizualization
 from planvec import color_range
 from planvec.color_range import HSVColorRange
@@ -162,7 +167,6 @@ def warp_image(img, src_points, dst_points, final_size, show_plot=False):
         plt.subplots(figsize=(15, 9))
         plt.subplot(121), plt.imshow(cv.cvtColor(img, cv.COLOR_BGR2RGB)), plt.title('Input')
         plt.subplot(122), plt.imshow(cv.cvtColor(warped_img, cv.COLOR_BGR2RGB)), plt.title('Output')
-        plt.show()
     return warped_img
 
 
@@ -183,7 +187,12 @@ def rectify_wrt_red_dots(img, dst_shape, show_plot=False, verbose=False):
     """
     img_red = filter_keep_multi_ranges(img, [color_range.RED_LOW, color_range.RED_HIGH])
     img_labelled_proc, filtered_regions = planvec.img_proc.find_regions(img_red, 2, 10)
-    corner_centroids = [[region.centroid[1], region.centroid[0]] for region in filtered_regions]
+
+    # Only keep 4 largest regions
+    regions_sorted_by_area = sorted(filtered_regions, key=lambda region: region.area, reverse=True)
+    filtered_regions = regions_sorted_by_area[:4]
+
+    corner_centroids = [(region.centroid[1], region.centroid[0]) for region in filtered_regions]
     """
     We need to sort corner_centroids such that they map correctly to the new corners.
     1 - 3
@@ -191,10 +200,15 @@ def rectify_wrt_red_dots(img, dst_shape, show_plot=False, verbose=False):
     2 - 4
     Therefore we first sort by lateral x-direction and then by vertical y-direction.
     """
-    corner_centroids.sort(key=lambda point: (point[0], point[1]))
-    new_corners = [[0, 0], [0, dst_shape[1]], [dst_shape[0], 0], [dst_shape[0], dst_shape[1]]]
+
+    def sort_points_clockwise(coords):
+        center = tuple(map(operator.truediv, reduce(lambda x, y: map(operator.add, x, y), coords), [len(coords)] * 2))
+        return sorted(coords, key=lambda coord: (-135 - math.degrees(math.atan2(*tuple(map(operator.sub, coord, center))[::-1]))) % 360)
+
+    new_corners = [[0, 0], [0, dst_shape[1]], [dst_shape[0], dst_shape[1]], [dst_shape[0], 0]]
     # assert len(corner_centroids) == 4, f'Corner extraction failed. Extracted {len(corner_centroids)} but 4 expected.'
     if len(corner_centroids) == 4:
+        corner_centroids = sort_points_clockwise(corner_centroids)
         warped = warp_image(img, corner_centroids, new_corners, dst_shape, show_plot=show_plot)
         if verbose:
             print(DEBUG_BARS)
@@ -202,6 +216,11 @@ def rectify_wrt_red_dots(img, dst_shape, show_plot=False, verbose=False):
                   f'{np.array(corner_centroids).round(decimals=2)}\nMapped to \n{np.array(new_corners)}.\nNew image size: {dst_shape}.')
         return warped
     else:
+        if verbose:
+            print(DEBUG_BARS)
+            print(f'Warping image wrt corners failed. Found {len(corner_centroids)} corners at positions\n'
+                  f'found {len(corner_centroids)} red dots at\n{np.array(corner_centroids).round(decimals=2)}')
+        print('Rectification failed. Forwarding original image.')
         return img
 
 
