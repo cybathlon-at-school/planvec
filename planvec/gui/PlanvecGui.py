@@ -19,10 +19,13 @@ class PlanvecGui(QMainWindow):
     """Main class for the PlanvecGui representing the
     main window and components."""
 
+    toggle_canny_signal = QtCore.pyqtSignal()
+
     def __init__(self, gui_config):
         super().__init__()
         self.config = gui_config
         self.main_widget = QWidget()
+        self.video_stream_thread = None
         self.initUI()
 
     def initUI(self):
@@ -66,18 +69,21 @@ class PlanvecGui(QMainWindow):
         """This is a box with holding various buttons."""
         btns_layout = QHBoxLayout()
         save_btn = QPushButton("Save!")
+        save_btn.setStyleSheet("background-color: #5DADE2")
         save_btn.clicked.connect(self.on_save_click)
-        dummy_btn = QPushButton("Dummy")
+        dummy_btn = QPushButton("Toggle Canny!")
+        dummy_btn.setStyleSheet("background-color: #E67E22")
+        dummy_btn.clicked.connect(self.video_stream_thread.toggle_canny_slot)
         btns_layout.addWidget(save_btn)
         btns_layout.addWidget(dummy_btn)
         return btns_layout
 
     def _start_video_stream_label(self):
         vid_label, proc_label = QLabel(self), QLabel(self)
-        th = VideoStreamThread(self.main_widget)
-        th.change_pixmap_signal.connect(partial(self.video_callback,
+        self.video_stream_thread = VideoStreamThread(self.main_widget)
+        self.video_stream_thread.change_pixmap_signal.connect(partial(self.video_callback,
                                                 vid_label, proc_label))
-        th.start()
+        self.video_stream_thread.start()
         print('Video stream started.')
         return vid_label, proc_label
 
@@ -103,29 +109,41 @@ class PlanvecGui(QMainWindow):
         proc_label.setPixmap(QtGui.QPixmap.fromImage(final_image))
 
 
-def process_frame(bgr_frame: np.ndarray) -> QImage:
+def process_frame(bgr_frame: np.ndarray, do_canny: bool) -> QImage:
     """Main function which takes the camera frame (bgr_frame since opencv) and
     processes it such that the resulting image (QImage format) can be displayed
     next to the input image."""
-    # qt_img_processed = planvec.pipeline.run_pipeline(
-    #                 bgr_frame.copy(), verbose=False, visualize_steps=False)
-    rgb_img = conversions.bgr2rgb(bgr_frame)
-    gray_img = cv2.cvtColor(rgb_img, cv2.COLOR_RGB2GRAY)
-    edged = cv2.Canny(gray_img, 50, 100)
-    canny_qt_img = conversions.gray2qt(edged)
-    return canny_qt_img
+    if do_canny:
+        rgb_img = conversions.bgr2rgb(bgr_frame)
+        gray_img = cv2.cvtColor(rgb_img, cv2.COLOR_RGB2GRAY)
+        edged = cv2.Canny(gray_img, 50, 100)
+        canny_qt_img = conversions.gray2qt(edged)
+        return canny_qt_img
+
+    qt_img_processed = planvec.pipeline.run_pipeline(
+        bgr_frame.copy(), verbose=False, visualize_steps=False)
+    return qt_img_processed
 
 
 class VideoStreamThread(QtCore.QThread):
     change_pixmap_signal = QtCore.pyqtSignal(QtGui.QImage, QtGui.QImage)
+
+    def __init__(self, parent=None, do_canny=True):
+        super().__init__(parent=parent)
+        self.do_canny = do_canny
+
+    @QtCore.pyqtSlot()
+    def toggle_canny_slot(self):
+        self.do_canny = not self.do_canny
 
     def run(self):
         capture = cv2.VideoCapture(0)
         while True:
             ret, frame = capture.read()  # frame is BGR since OpenCV format
             if ret:
-                frame = np.fliplr(frame)
+                frame = np.fliplr(frame)  # slower
+                # frame = frame[:,::-1, :]  # flip img along vertical axis
                 input_img_qt = conversions.bgr2qt(frame)
-                output_img_qt = process_frame(frame)
+                output_img_qt = process_frame(frame, self.do_canny)
                 self.change_pixmap_signal.emit(input_img_qt, output_img_qt)
                 time.sleep(0.05)
