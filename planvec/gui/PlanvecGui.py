@@ -12,7 +12,11 @@ import numpy as np
 
 from planvec import common
 from planvec import conversions
+from planvec.gui.gui_io import DataManager
 import planvec.pipeline
+
+
+CAMERA = 1  # 0 is built-in camera, 1 is USB camera
 
 
 class PlanvecGui(QMainWindow):
@@ -27,6 +31,7 @@ class PlanvecGui(QMainWindow):
         self.main_widget = QWidget()
         self.video_stream_thread = None
         self.initUI()
+        self.data_manager = DataManager()
 
     def initUI(self):
         # Setup Main window properties
@@ -51,18 +56,27 @@ class PlanvecGui(QMainWindow):
 
         # Video Widget
         video_label, processed_label = self._start_video_stream_label()
-        main_layout.addWidget(
-            video_label, 0, 0, alignment=QtCore.Qt.AlignCenter)
+        main_layout.addWidget(video_label,
+                              0,
+                              0,
+                              alignment=QtCore.Qt.AlignCenter)
 
         # Processed image Widget
         # img_label = self._create_pixmap_label(file_path = os.path.join(common.PROJECT_ROOT_PATH, 'data/2019-10-09_16-21-38.jpg'))
 
-        main_layout.addWidget(processed_label, 0, 1,
+        main_layout.addWidget(processed_label,
+                              0,
+                              1,
                               alignment=QtCore.Qt.AlignCenter)
 
         # Buttons Widget
-        main_layout.addLayout(self._create_btns_layout(), 1, 0, 1, 2,
-                              alignment=QtCore.Qt.AlignCenter | QtCore.Qt.AlignTop)
+        main_layout.addLayout(self._create_btns_layout(),
+                              1,
+                              0,
+                              1,
+                              2,
+                              alignment=QtCore.Qt.AlignCenter
+                              | QtCore.Qt.AlignTop)
         self.main_widget.setLayout(main_layout)
 
     def _create_btns_layout(self):
@@ -81,8 +95,8 @@ class PlanvecGui(QMainWindow):
     def _start_video_stream_label(self):
         vid_label, proc_label = QLabel(self), QLabel(self)
         self.video_stream_thread = VideoStreamThread(self.main_widget)
-        self.video_stream_thread.change_pixmap_signal.connect(partial(self.video_callback,
-                                                vid_label, proc_label))
+        self.video_stream_thread.change_pixmap_signal.connect(
+            partial(self.video_callback, vid_label, proc_label))
         self.video_stream_thread.start()
         print('Video stream started.')
         return vid_label, proc_label
@@ -97,11 +111,9 @@ class PlanvecGui(QMainWindow):
 
     @QtCore.pyqtSlot()
     def on_save_click(self):
-        print("Clicked save button.")
-
-    @QtCore.pyqtSlot()
-    def on_dummy_click(self):
-        print("Clicked dummy button.")
+        qt_img = self.video_stream_thread.get_curr_out()
+        self.data_manager.save_image('hello', qt_img)
+        print("Image saved.")
 
     @QtCore.pyqtSlot(QtGui.QImage)
     def video_callback(self, video_label, proc_label, orig_image, final_image):
@@ -110,7 +122,7 @@ class PlanvecGui(QMainWindow):
 
 
 def process_frame(bgr_frame: np.ndarray, do_canny: bool) -> QImage:
-    """Main function which takes the camera frame (bgr_frame since opencv) and
+    """Main function which takes the camera bgr_frame (bgr_frame since opencv) and
     processes it such that the resulting image (QImage format) can be displayed
     next to the input image."""
     if do_canny:
@@ -120,8 +132,9 @@ def process_frame(bgr_frame: np.ndarray, do_canny: bool) -> QImage:
         canny_qt_img = conversions.gray2qt(edged)
         return canny_qt_img
 
-    qt_img_processed = planvec.pipeline.run_pipeline(
-        bgr_frame.copy(), verbose=False, visualize_steps=False)
+    qt_img_processed = planvec.pipeline.run_pipeline(bgr_frame.copy(),
+                                                     verbose=False,
+                                                     visualize_steps=False)
     return qt_img_processed
 
 
@@ -131,19 +144,25 @@ class VideoStreamThread(QtCore.QThread):
     def __init__(self, parent=None, do_canny=True):
         super().__init__(parent=parent)
         self.do_canny = do_canny
+        self.curr_qt_img_input = None
+        self.curr_qt_img_out = None
 
     @QtCore.pyqtSlot()
-    def toggle_canny_slot(self):
+    def toggle_canny_slot(self) -> None:
         self.do_canny = not self.do_canny
 
-    def run(self):
-        capture = cv2.VideoCapture(0)
+    def get_curr_out(self) -> QImage:
+        return self.curr_qt_img_out
+
+    def run(self) -> None:
+        capture = cv2.VideoCapture(CAMERA)
         while True:
-            ret, frame = capture.read()  # frame is BGR since OpenCV format
+            ret, bgr_frame = capture.read()  # frame is BGR since OpenCV format
             if ret:
-                frame = np.fliplr(frame)  # slower
-                # frame = frame[:,::-1, :]  # flip img along vertical axis
-                input_img_qt = conversions.bgr2qt(frame)
-                output_img_qt = process_frame(frame, self.do_canny)
-                self.change_pixmap_signal.emit(input_img_qt, output_img_qt)
+                # bgr_frame = np.fliplr(bgr_frame)  # slow but for builtin cam
+                self.curr_qt_img_input = conversions.bgr2qt(bgr_frame)
+                self.curr_qt_img_out = process_frame(bgr_frame, self.do_canny)
+
+                self.change_pixmap_signal.emit(self.curr_qt_img_input,
+                                               self.curr_qt_img_out)
                 time.sleep(0.05)

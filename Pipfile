@@ -6,9 +6,9 @@ verify_ssl = true
 [dev-packages]
 flake8 = "*"
 autopep8 = "*"
+yapf = "*"
 
 [packages]
-jupyter = "*"
 numpy = "*"
 matplotlib = "*"
 sklearn = "*"
@@ -20,6 +20,8 @@ imutils = "*"
 pyqt5 = "*"
 dotmap = "*"
 qimage2ndarray = "*"
+jupyter = "*"
+ipykernel = "<5.0.0"
 
 [requires]
 python_version = "3.6"
