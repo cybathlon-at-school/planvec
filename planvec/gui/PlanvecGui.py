@@ -133,14 +133,15 @@ class PlanvecGui(QMainWindow):
             if not self.data_manager.team_dir_exists(team_name):
                 team_dir_dialog = TeamDirDialog(team_name, self.data_manager)
                 team_dir_dialog.execute()
-            img_idx = self.data_manager.get_next_team_img_idx(team_name)
-            self.data_manager.save_image(team_name, curr_qt_img_in,
-                                         '_original', idx=img_idx)
-            self.data_manager.save_image(team_name, curr_qt_img_out,
-                                         '_output', idx=img_idx)
-            save_msg_box = QMessageBox()
-            save_msg_box.setText(f'Bilder gespeichert für Gruppe: {team_name}')
-            save_msg_box.exec_()
+            if self.data_manager.team_dir_exists(team_name):  # dir created
+                img_idx = self.data_manager.get_next_team_img_idx(team_name)
+                self.data_manager.save_image(team_name, curr_qt_img_in,
+                                            '_original', idx=img_idx)
+                self.data_manager.save_image(team_name, curr_qt_img_out,
+                                            '_output', idx=img_idx)
+                save_msg_box = QMessageBox()
+                save_msg_box.setText(f'Bilder gespeichert für Gruppe: {team_name}')
+                save_msg_box.exec_()
         elif button_return.text() == '&Cancel':
             pass
         else:
