@@ -46,7 +46,8 @@ class HSVColorRange:
         return self.end[2]
 
 
-# Those values have been found empirically by using the interactive filtering tool from planvec.img_proc.
+# Those values have been found empirically by using the 
+# interactive filtering tool from planvec.img_proc.
 BLUE = HSVColorRange(       [91, 66, 20],  [160, 255, 255])
 RED_LOW = HSVColorRange(    [0, 71, 71],    [5, 255, 255])
 RED_HIGH = HSVColorRange(   [165, 60, 60],  [179, 255, 255])
