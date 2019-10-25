@@ -1,17 +1,14 @@
-import io
-import os
 import cv2
 import time
 import warnings
 from functools import partial
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QLabel, QPushButton,
-                             QHBoxLayout, QGroupBox, QDialog, QVBoxLayout,
-                             QGridLayout, QWidget, QMessageBox, QLineEdit)
+from PyQt5.QtWidgets import (QMainWindow, QLabel, QPushButton,
+                             QHBoxLayout, QVBoxLayout,
+                             QGridLayout, QWidget, QMessageBox, QLineEdit, QShortcut)
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtGui import QImage
 import numpy as np
 
-from planvec import common
 from planvec import conversions
 from planvec.gui.gui_io import DataManager
 import planvec.pipeline
@@ -23,18 +20,19 @@ class PlanvecGui(QMainWindow):
     """Main class for the PlanvecGui representing the
     main window and components."""
 
-    toggle_canny_signal = QtCore.pyqtSignal()
+    toggle_canny_signal = QtCore.pyqtSignal()  # signal which toggles the image processing to canny edge detection
 
     def __init__(self, gui_config):
         super().__init__()
         self.config = gui_config
         self.main_widget = QWidget()
         self.video_stream_thread = None
-        self.initUI()
+        self.init_ui()
         self.data_manager = DataManager()
         self.save_msg_box = None
+        QShortcut(QtGui.QKeySequence("Ctrl+Q"), self, self.close)
 
-    def initUI(self):
+    def init_ui(self):
         # Setup Main window properties
         self.setWindowTitle(self.config.window.title)
         self.setGeometry(self.config.window.left, self.config.window.top,
@@ -45,7 +43,19 @@ class PlanvecGui(QMainWindow):
         # Main Layout
         self.setCentralWidget(self.main_widget)
         self._create_main_layout()
+        self.init_style_sheet()
         self.show()
+
+    def init_style_sheet(self):
+        self.setStyleSheet(
+            """
+            QPushButton {
+                color: #fff !important;
+                text-transform: uppercase;
+                padding: 20px;
+            }
+            """
+        )
 
     def _create_main_layout(self):
         """This is the layout for them main widget."""
@@ -57,27 +67,18 @@ class PlanvecGui(QMainWindow):
 
         # Video Widget
         video_label, processed_label = self._start_video_stream_label()
-        main_layout.addWidget(video_label,
-                              0,
-                              0,
+        main_layout.addWidget(video_label, 0, 0,
                               alignment=QtCore.Qt.AlignCenter)
 
         # Processed image Widget
         # img_label = self._create_pixmap_label(file_path = os.path.join(common.PROJECT_ROOT_PATH, 'data/2019-10-09_16-21-38.jpg'))
 
-        main_layout.addWidget(processed_label,
-                              0,
-                              1,
+        main_layout.addWidget(processed_label, 0, 1,
                               alignment=QtCore.Qt.AlignCenter)
 
         # Buttons Widget
-        main_layout.addLayout(self._create_btns_layout(),
-                              1,
-                              0,
-                              1,
-                              2,
-                              alignment=QtCore.Qt.AlignCenter
-                              | QtCore.Qt.AlignTop)
+        main_layout.addLayout(self._create_btns_layout(), 1, 0, 1, 2,
+                              alignment=QtCore.Qt.AlignCenter | QtCore.Qt.AlignTop)
         self.main_widget.setLayout(main_layout)
 
     def _create_btns_layout(self):
@@ -121,7 +122,7 @@ class PlanvecGui(QMainWindow):
                                      QtCore.Qt.KeepAspectRatio)
         out_pixmap = out_pixmap.scaled(self.config.video.display_width, self.config.video.display_height,
                                        QtCore.Qt.KeepAspectRatio)
-        
+
         video_label.setPixmap(in_pixmap)
         proc_label.setPixmap(out_pixmap)
 
@@ -272,7 +273,7 @@ class TeamDirDialog(QMessageBox):
 
     def setup(self):
         text = 'Die Gruppe {} existiert noch nicht. ' \
-                'Neuen Ordner anlegen?'.format(self.team_name)
+               'Neuen Ordner anlegen?'.format(self.team_name)
         self.setIcon(QMessageBox.Question)
         self.setText(text)
         self.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
