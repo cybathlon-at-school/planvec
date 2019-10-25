@@ -13,7 +13,7 @@ HELPER_COLOR_RANGES = [color_range.BLUE, color_range.RED_HIGH, color_range.RED_L
 DEFAULT_FIG_SIZE = (13, 8)
 
 
-def run_pipeline(img, visualize_steps=False, verbose=False, return_np_arr=True):
+def run_pipeline(img, visualize_steps=False, verbose=False, return_np_arr=True, return_fig=False):
     """Full processing pipeline for an incoming image producing end-to-end the final figure which then can be
     stored as a pdf."""
     if verbose:
@@ -60,13 +60,13 @@ def run_pipeline(img, visualize_steps=False, verbose=False, return_np_arr=True):
     # Important: Close the figure, else a shitton of figures are staying open
     #            which will fill up memory.
     pil_img = conversions.fig2img(output_fig)
-    plt.close(output_fig)
-    return ImageQt(pil_img)
-    """
-    # plt.show()
-    print(plt.get_fignums())
-    if return_np_arr:
-        return conversions.fig2img(output_fig)
-        plt.close('all')
-    return output_fig
-    """
+    if not return_fig:
+        plt.close(output_fig)
+
+        return ImageQt(pil_img)
+    else:
+        print(plt.get_fignums())
+        #if return_np_arr:
+        #    return conversions.fig2img(output_fig)
+        #    plt.close('all')
+        return output_fig
