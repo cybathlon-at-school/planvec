@@ -1,8 +1,6 @@
-import numpy as np
 import skimage
 import matplotlib.pyplot as plt
 from PIL.ImageQt import ImageQt
-import time
 
 from planvec import img_proc
 from planvec import color_range
@@ -53,10 +51,11 @@ def run_pipeline(img, visualize_steps=False, verbose=False, return_np_arr=True, 
     approx_contours = []
     for contour in contours:
         approx_contours.append(skimage.measure.approximate_polygon(contour.copy(), tolerance=1))
-    
-    output_fig = vizualization.plot_contours(approx_contours, axis='off', color='red', linewidth=0.5, figsize=DEFAULT_FIG_SIZE)
+
+    output_fig = vizualization.plot_contours(approx_contours, axis='off', color='red', linewidth=0.5,
+                                             figsize=DEFAULT_FIG_SIZE)
     output_fig.set_size_inches(6, 5)
-    
+
     # Important: Close the figure, else a shitton of figures are staying open
     #            which will fill up memory.
     pil_img = conversions.fig2img(output_fig)
@@ -66,7 +65,7 @@ def run_pipeline(img, visualize_steps=False, verbose=False, return_np_arr=True, 
         return ImageQt(pil_img)
     else:
         print(plt.get_fignums())
-        #if return_np_arr:
+        # if return_np_arr:
         #    return conversions.fig2img(output_fig)
         #    plt.close('all')
         return output_fig
