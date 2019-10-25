@@ -3,7 +3,7 @@ import sys
 import numpy as np
 
 
-CAMERA = 1  # 0 for laptop cam, 1 for USB cam
+CAMERA = 0  # 0 for laptop cam, 1 for USB cam
 
 useCamera = False
 

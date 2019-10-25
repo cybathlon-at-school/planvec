@@ -2,6 +2,7 @@ import io
 import os
 import cv2
 import time
+import warnings
 from functools import partial
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QLabel, QPushButton,
                              QHBoxLayout, QGroupBox, QDialog, QVBoxLayout,
@@ -15,7 +16,7 @@ from planvec import conversions
 from planvec.gui.gui_io import DataManager
 import planvec.pipeline
 
-CAMERA = 1  # 0 is built-in camera, 1 is USB camera
+CAM_MAP = {'USB': 1, 'BUILTIN': 0}
 
 
 class PlanvecGui(QMainWindow):
@@ -94,7 +95,8 @@ class PlanvecGui(QMainWindow):
 
     def _start_video_stream_label(self):
         vid_label, proc_label = QLabel(self), QLabel(self)
-        self.video_stream_thread = VideoStreamThread(self.main_widget)
+        self.video_stream_thread = VideoStreamThread(parent=self.main_widget,
+                                                     video_config=self.config.video)
         self.video_stream_thread.change_pixmap_signal.connect(
             partial(self.video_callback, vid_label, proc_label))
         self.video_stream_thread.start()
@@ -111,8 +113,17 @@ class PlanvecGui(QMainWindow):
 
     @QtCore.pyqtSlot(QtGui.QImage)
     def video_callback(self, video_label, proc_label, orig_image, final_image):
-        video_label.setPixmap(QtGui.QPixmap.fromImage(orig_image))
-        proc_label.setPixmap(QtGui.QPixmap.fromImage(final_image))
+        # Resizing for display
+        in_pixmap = QtGui.QPixmap.fromImage(orig_image)
+        out_pixmap = QtGui.QPixmap.fromImage(final_image)
+
+        in_pixmap = in_pixmap.scaled(self.config.video.display_width, self.config.video.display_height,
+                                     QtCore.Qt.KeepAspectRatio)
+        out_pixmap = out_pixmap.scaled(self.config.video.display_width, self.config.video.display_height,
+                                       QtCore.Qt.KeepAspectRatio)
+        
+        video_label.setPixmap(in_pixmap)
+        proc_label.setPixmap(out_pixmap)
 
     def save_img_dialog(self):
         """A QMessageBox pops up asking further details from the user."""
@@ -136,9 +147,9 @@ class PlanvecGui(QMainWindow):
             if self.data_manager.team_dir_exists(team_name):  # dir created
                 img_idx = self.data_manager.get_next_team_img_idx(team_name)
                 self.data_manager.save_image(team_name, curr_qt_img_in,
-                                            '_original', idx=img_idx)
+                                             '_original', idx=img_idx)
                 self.data_manager.save_image(team_name, curr_qt_img_out,
-                                            '_output', idx=img_idx)
+                                             '_output', idx=img_idx)
                 save_msg_box = QMessageBox()
                 save_msg_box.setText(f'Bilder gespeichert für Gruppe: {team_name}')
                 save_msg_box.exec_()
@@ -168,8 +179,9 @@ def process_frame(bgr_frame: np.ndarray, do_canny: bool) -> QImage:
 class VideoStreamThread(QtCore.QThread):
     change_pixmap_signal = QtCore.pyqtSignal(QtGui.QImage, QtGui.QImage)
 
-    def __init__(self, parent=None, do_canny=True):
+    def __init__(self, video_config, parent=None, do_canny=True):
         super().__init__(parent=parent)
+        self.video_config = video_config
         self.do_canny = do_canny
         self.curr_qt_img_input = None
         self.curr_qt_img_out = None
@@ -186,14 +198,22 @@ class VideoStreamThread(QtCore.QThread):
         return self.curr_qt_img_input
 
     def run(self) -> None:
-        capture = cv2.VideoCapture(CAMERA)
+        capture = cv2.VideoCapture(CAM_MAP[self.video_config.camera])
+        if not capture.isOpened():
+            capture = cv2.VideoCapture(abs(1 - CAM_MAP[self.video_config.camera]))
+            warnings.warn(f'Needed to switch camera choice!')
+            if not capture.isOpened():
+                raise RuntimeError(f'Couldn\'t connect to camera! Tried all of {list(CAM_MAP.keys())}')
+        capture.set(cv2.CAP_PROP_FRAME_WIDTH, self.video_config.max_input_width)
+        capture.set(cv2.CAP_PROP_FRAME_HEIGHT, self.video_config.max_input_height)
         while True:
             if not self.stopped:
                 ret, bgr_frame = capture.read()  # frame is BGR since OpenCV format
                 if ret:
                     # bgr_frame = np.fliplr(bgr_frame)  # slow but for builtin cam
                     self.curr_qt_img_input = conversions.bgr2qt(bgr_frame)
-                    self.curr_qt_img_out = process_frame(bgr_frame, self.do_canny)
+                    self.curr_qt_img_out = process_frame(bgr_frame,
+                                                         self.do_canny)
 
                     self.change_pixmap_signal.emit(self.curr_qt_img_input,
                                                    self.curr_qt_img_out)
@@ -201,7 +221,6 @@ class VideoStreamThread(QtCore.QThread):
 
     def toggle_stopped(self):
         self.stopped = not self.stopped
-        print('Toggled stop. Now: ', self.stopped)
 
 
 class SaveMsgBox(QMessageBox):
@@ -211,7 +230,7 @@ class SaveMsgBox(QMessageBox):
         self.data_manager = data_manager
         self.line_edit = None
         self.setup()
-        
+
     def setup(self):
         self.setIcon(QMessageBox.Question)
         self.setText("Bild wirklich speichern?")
@@ -223,9 +242,8 @@ class SaveMsgBox(QMessageBox):
         if len(team_names) == 0:
             team_names_str = 'Es existieren noch keine Gruppen.'
         for team in team_names:
-            n_images = len(self.data_manager.load_team_img_names(team))
-            team_names_str += f'\n   {team}\t\t {n_images} Bilder.'
-        
+            # n_images = len(self.data_manager.load_team_img_names(team))
+            team_names_str += f'\n    {team}'
         info_label = QLabel(team_names_str)
         self.line_edit = QLineEdit()
         team_layout = QVBoxLayout()

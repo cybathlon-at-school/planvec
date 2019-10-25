@@ -5,13 +5,12 @@ verify_ssl = true
 
 [dev-packages]
 flake8 = "*"
-autopep8 = "*"
 yapf = "*"
+pyinstaller = "*"
 
 [packages]
 numpy = "*"
 matplotlib = "*"
-sklearn = "*"
 scipy = "*"
 scikit-image = "*"
 img2pdf = "*"
@@ -21,7 +20,9 @@ pyqt5 = "*"
 dotmap = "*"
 qimage2ndarray = "*"
 jupyter = "*"
-ipykernel = "<5.0.0"
+pandas = "==0.22.0"
+seaborn = "*"
+pyqt5-stubs = "*"
 
 [requires]
 python_version = "3.6"
