@@ -7,7 +7,7 @@ from planvec import color_range
 from planvec import vizualization
 from planvec import conversions
 
-HELPER_COLOR_RANGES = [color_range.BLUE, color_range.RED_HIGH, color_range.RED_LOW]
+HELPER_COLOR_RANGES = [color_range.BLUE, color_range.RED_HIGH, color_range.RED_LOW, color_range.GREEN]
 DEFAULT_FIG_SIZE = (13, 8)
 
 
@@ -21,12 +21,12 @@ def run_pipeline(img, visualize_steps=False, verbose=False, return_np_arr=True, 
         vizualization.imshow(img, axis='off', figsize=DEFAULT_FIG_SIZE, img_space='BGR')
     # Process image, stretch to dots, and filter out helper colors
     img = img_proc.rectify_wrt_red_dots(img, (600, 350), show_plot=visualize_steps, verbose=verbose)
-    img = img_proc.add_gaussian_blur(img, 5, 5)
+    img = img_proc.add_gaussian_blur(img, 3, 3)
     img = img_proc.filter_multi_hsv_ranges_to_white(img, HELPER_COLOR_RANGES)
     if visualize_steps:
         vizualization.imshow(img, axis='off', figsize=DEFAULT_FIG_SIZE, img_space='BGR')
     img = img_proc.img_to_greyscale(img)
-    img = img_proc.thresh_img(img, 150, 255)
+    img = img_proc.thresh_img(img, 110, 255)
     if visualize_steps:
         vizualization.imshow(img, axis='off', figsize=DEFAULT_FIG_SIZE, img_space='BGR')
 
@@ -36,7 +36,7 @@ def run_pipeline(img, visualize_steps=False, verbose=False, return_np_arr=True, 
     if verbose:
         print(f'Found {n} regions.')
     img_labelled_proc, filtered_regions = img_proc.filter_regions(labelled_img, regionprops=regions,
-                                                                  area_threshold=10000, verbose=verbose)
+                                                                  area_threshold=5000, verbose=verbose)
     if verbose:
         print(f'After filtering, {len(filtered_regions)} are left.')
     if visualize_steps:

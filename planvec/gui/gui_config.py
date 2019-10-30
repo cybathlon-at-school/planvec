@@ -18,8 +18,8 @@ config_dict = {
     },
     'video': {
         'camera': 'USB',  # either 'USB' or 'BUILTIN'
-        'max_input_width': 640,
-        'max_input_height': 480,
+        'max_input_width': 1920,
+        'max_input_height': 1080,
         'display_width': 850,
         'display_height': 900
     },
