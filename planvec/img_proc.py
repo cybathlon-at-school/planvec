@@ -136,6 +136,8 @@ def filter_regions(labelled_img, regionprops, area_threshold, verbose=False):
             labelled_img[region_mask] = 0
             continue
         filtered_regions.append(region)
+    if verbose:
+        print(f'{len(filtered_regions)} regions left, sizes: {[region.area for region in filtered_regions]}')
     return labelled_img, filtered_regions
 
 
