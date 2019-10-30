@@ -23,6 +23,9 @@ jupyter = "*"
 pandas = "==0.22.0"
 seaborn = "*"
 pyqt5-stubs = "*"
+pip = "*"
+install = "*"
+pypdf2 = "*"
 
 [requires]
 python_version = "3.6"
