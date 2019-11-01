@@ -7,9 +7,9 @@ import sys
 from PyQt5.QtWidgets import QApplication
 
 from planvec.gui import PlanvecGui
-from planvec.gui.gui_config import gui_config
+from config import CONFIG
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ex = PlanvecGui.PlanvecGui(gui_config)
+    ex = PlanvecGui.PlanvecGui(CONFIG)
     sys.exit(app.exec_())

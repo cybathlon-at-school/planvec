@@ -4,9 +4,6 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-flake8 = "*"
-yapf = "*"
-pyinstaller = "*"
 
 [packages]
 numpy = "*"
@@ -23,9 +20,7 @@ jupyter = "*"
 pandas = "==0.22.0"
 seaborn = "*"
 pyqt5-stubs = "*"
-pip = "*"
-install = "*"
 pypdf2 = "*"
 
 [requires]
-python_version = "3.6"
+python_version = "3.6.9"

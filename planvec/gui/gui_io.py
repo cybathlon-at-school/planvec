@@ -11,7 +11,7 @@ date_utils.get_date_time_tag()
 IMG_NAME_FORMAT = '{idx}_{team}_{date_tag}{suffix}.jpeg'
 
 
-class DataManager():
+class DataManager:
     def __init__(self, date_tag=date_utils.get_date_tag()):
         self.date_tag = date_tag
         self.out_dir_path = os.path.join(DATA_DIR_PATH, date_tag)
@@ -31,13 +31,9 @@ class DataManager():
         if not self.team_dir_exists(team_name):
             os.makedirs(os.path.join(self.out_dir_path, team_name))
 
-    def save_image(self, 
-                   team_name: str,
-                   qt_img: QImage,
-                   suffix: str = '',
-                   idx: int = None) -> None:
-        assert self.team_dir_exists(team_name), 'Cannot save. Team directory '\
-                                                 'does not exist.'
+    def save_image(self, team_name: str, qt_img: QImage, suffix: str = '', idx: int = None) -> None:
+        assert self.team_dir_exists(team_name), 'Cannot save. Team directory ' \
+                                                'does not exist.'
         if idx is None:
             idx = self.get_next_team_img_idx(team_name)
         img_name = IMG_NAME_FORMAT.format(idx=idx,
@@ -53,7 +49,7 @@ class DataManager():
             return os.listdir(os.path.join(self.out_dir_path, team_name))
         else:
             return []
-    
+
     def get_next_team_img_idx(self, team_name: str) -> int:
         team_img_names = self.load_team_img_names(team_name)
         img_indices = sorted([int(name.split('_')[0]) for name in team_img_names])
@@ -65,3 +61,9 @@ class DataManager():
         items = os.listdir(self.out_dir_path)
         return [item for item in items
                 if os.path.isdir(os.path.join(self.out_dir_path, item))]
+
+    def delete_all_team_imgs(self, team_name: str):
+        """Caution: This method deletes all output images stored for a team."""
+        team_img_names = self.load_team_img_names(team_name)
+        for img in team_img_names:
+            os.remove(os.path.join(os.path.join(self.out_dir_path, team_name, img)))
