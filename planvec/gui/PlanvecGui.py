@@ -59,20 +59,19 @@ class PlanvecGui(QMainWindow):
         )
 
     def _create_main_layout(self):
-        """This is the layout for them main widget."""
+        """This is the layout for them main widget by adding video and button widgets."""
         main_layout = QGridLayout()
+        # Set relative stretch values, columns of equal size
         main_layout.setColumnStretch(0, 1)
         main_layout.setColumnStretch(1, 1)
+        # Relative stretch s.t. first row (for images) is ten times bottom row (for buttons)
         main_layout.setRowStretch(0, 10)
         main_layout.setRowStretch(1, 1)
 
-        # Video Widget
+        # Video widget for input and processed stream
         video_label, processed_label = self._start_video_stream_label()
         main_layout.addWidget(video_label, 0, 0,
                               alignment=QtCore.Qt.AlignCenter)
-
-        # Processed image Widget
-        # img_label = self._create_pixmap_label(file_path = os.path.join(common.PROJECT_ROOT_PATH, 'data/2019-10-09_16-21-38.jpg'))
 
         main_layout.addWidget(processed_label, 0, 1,
                               alignment=QtCore.Qt.AlignCenter)
@@ -82,20 +81,10 @@ class PlanvecGui(QMainWindow):
                               alignment=QtCore.Qt.AlignCenter | QtCore.Qt.AlignTop)
         self.main_widget.setLayout(main_layout)
 
-    def _create_btns_layout(self):
-        """This is a box with holding various buttons."""
-        btns_layout = QHBoxLayout()
-        save_btn = QPushButton("Save!")
-        save_btn.setStyleSheet("background-color: #5DADE2")
-        save_btn.clicked.connect(self.save_img_dialog)
-        dummy_btn = QPushButton("Toggle Canny!")
-        dummy_btn.setStyleSheet("background-color: #E67E22")
-        dummy_btn.clicked.connect(self.video_stream_thread.toggle_canny_slot)
-        btns_layout.addWidget(save_btn)
-        btns_layout.addWidget(dummy_btn)
-        return btns_layout
-
     def _start_video_stream_label(self):
+        """Start a video VideoStreamThread, create original video and processed video QLabels and connect
+        the VideoStreamThread QImage signal to the self.video_callback function which sets the pix maps
+        of the video labels."""
         vid_label, proc_label = QLabel(self), QLabel(self)
         self.video_stream_thread = VideoStreamThread(parent=self.main_widget,
                                                      video_config=self.config.video)
@@ -104,14 +93,6 @@ class PlanvecGui(QMainWindow):
         self.video_stream_thread.start()
         print('Video stream started.')
         return vid_label, proc_label
-
-    def _create_pixmap_label(self, file_path, width=None):
-        label = QLabel(self)
-        pixmap = QtGui.QPixmap(file_path)
-        if width:
-            pixmap = pixmap.scaledToWidth(width)
-        label.setPixmap(pixmap)
-        return label
 
     @QtCore.pyqtSlot(QtGui.QImage)
     def video_callback(self, video_label, proc_label, orig_image, final_image):
@@ -126,6 +107,27 @@ class PlanvecGui(QMainWindow):
 
         video_label.setPixmap(in_pixmap)
         proc_label.setPixmap(out_pixmap)
+
+    def _create_btns_layout(self):
+        """This is a box with holding various buttons."""
+        btns_layout = QHBoxLayout()
+        save_btn = QPushButton("Save!")
+        save_btn.setStyleSheet("background-color: #5DADE2")
+        save_btn.clicked.connect(self.save_img_dialog)
+        dummy_btn = QPushButton("Toggle Canny!")
+        dummy_btn.setStyleSheet("background-color: #E67E22")
+        dummy_btn.clicked.connect(self.video_stream_thread.toggle_canny_slot)
+        btns_layout.addWidget(save_btn)
+        btns_layout.addWidget(dummy_btn)
+        return btns_layout
+
+    def _create_pixmap_label(self, file_path, width=None):
+        label = QLabel(self)
+        pixmap = QtGui.QPixmap(file_path)
+        if width:
+            pixmap = pixmap.scaledToWidth(width)
+        label.setPixmap(pixmap)
+        return label
 
     def save_img_dialog(self):
         """A QMessageBox pops up asking further details from the user."""

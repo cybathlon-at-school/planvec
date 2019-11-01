@@ -7,7 +7,6 @@ from planvec import vizualization
 from planvec import conversions
 from config import CONFIG
 
-# HELPER_COLOR_RANGES = [color_range.BLUE, color_range.RED_HIGH, color_range.RED_LOW]
 DEFAULT_FIG_SIZE = (13, 8)
 
 
