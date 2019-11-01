@@ -36,13 +36,13 @@ class App(QtWidgets.QWidget):
         self.top = 200
         self.width = 640
         self.height = 480
-        self.initUI()
+        self.init_ui()
 
     @QtCore.pyqtSlot(QtGui.QImage)
-    def setImage(self, image):
+    def set_image(self, image):
         self.label.setPixmap(QtGui.QPixmap.fromImage(image))
 
-    def initUI(self):
+    def init_ui(self):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.resize(660, 500)
@@ -51,7 +51,7 @@ class App(QtWidgets.QWidget):
         self.label.move(10, 10)
         self.label.resize(640, 480)
         th = Thread(self)
-        th.changePixmap.connect(self.setImage)
+        th.changePixmap.connect(self.set_image)
         th.start()
 
 

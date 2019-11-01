@@ -39,4 +39,7 @@ config_dict = {
     }
 }
 
+# DotMap: This enables config access like...
+#     from planvec.config import CONFIG
+#     x_blur, y_blur = CONFIG.processing.gaussian_blur
 CONFIG = DotMap(config_dict)

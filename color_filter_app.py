@@ -1,9 +1,11 @@
+from planvec.utils.pythonpath_fix import fix_ros_cv_path
+fix_ros_cv_path()
 import cv2
 import sys
 import numpy as np
 
 
-CAMERA = 1  # 0 for laptop cam, 1 for USB cam
+CAMERA = 0  # 0 for laptop cam, 1 for USB cam
 
 useCamera = False
 
