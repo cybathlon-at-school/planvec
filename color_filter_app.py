@@ -5,8 +5,7 @@ import sys
 import numpy as np
 
 
-CAMERA = 0  # 0 for laptop cam, 1 for USB cam
-
+CAMERA = 1  # 0 for laptop cam, 1 for USB cam
 useCamera = False
 
 # Check if filename is passed
@@ -43,6 +42,9 @@ phMin = psMin = pvMin = phMax = psMax = pvMax = 0
 # Output Image to display
 if useCamera:
     cap = cv2.VideoCapture(CAMERA)
+    if not cap.isOpened():
+        cap = cv2.VideoCapture(abs(1 - CAMERA))
+
     # Wait longer to prevent freeze for videos.
     waitTime = 33
 else:
