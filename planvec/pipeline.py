@@ -79,10 +79,3 @@ def run_pipeline(img, ax, visualize_steps=False, verbose=False, return_np_arr=Tr
 
     pil_img = conversions.fig2img(ax.figure)
     return ax, ImageQt(pil_img)
-    """
-        print(plt.get_fignums())
-        #if return_np_arr:
-        #    return conversions.fig2img(output_fig)
-        #    plt.close('all')
-        return output_fig
-    """
