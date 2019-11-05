@@ -48,7 +48,7 @@ class HSVColorRange:
 
 # Those values have been found empirically by using the 
 # interactive filtering tool from planvec.img_proc.
-BLUE = HSVColorRange(       [91, 66, 20],  [150, 255, 255])
-RED_LOW = HSVColorRange(    [0, 71, 71],    [5, 255, 255])
-RED_HIGH = HSVColorRange(   [165, 60, 60],  [179, 255, 255])
-GREEN = HSVColorRange(      [33, 40, 30],  [88, 225, 225])
+# BLUE = HSVColorRange(       [91, 100, 20],  [150, 255, 255])
+# RED_LOW = HSVColorRange(    [0, 71, 71],    [5, 255, 255])
+# RED_HIGH = HSVColorRange(   [165, 60, 60],  [179, 255, 255])
+# GREEN = HSVColorRange(      [33, 40, 30],  [88, 225, 225])

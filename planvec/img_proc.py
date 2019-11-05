@@ -8,7 +8,6 @@ import operator
 import math
 
 import planvec.vizualization
-from planvec import color_range
 from planvec.color_range import HSVColorRange
 
 from typing import List
@@ -172,7 +171,7 @@ def warp_image(img, src_points, dst_points, final_size, show_plot=False):
     return warped_img
 
 
-def rectify_wrt_red_dots(img, dst_shape, show_plot=False, verbose=False):
+def rectify_wrt_red_dots(img, dst_shape, red_color_ranges, show_plot=False, verbose=False):
     """This function assumes we have four red dots in an image which represent the convex hull in a rectangular
     shape. When taking an image the camera is likely to take the picture a little bit from the side and distortion
     effects may take place. This function rectifies the image such that the four red dots form the outer boundary
@@ -181,13 +180,14 @@ def rectify_wrt_red_dots(img, dst_shape, show_plot=False, verbose=False):
     Arguments
     ---------
         img: input image
+        red_color_ranges: list of HSVCOlorRange's for red low and red high filter ranges
         dst_shape: tuple for size of final image, e.g. (600, 400) will give 600 pixels in x and 400 in y direction
         show_plot: if True, shows plot of before and after warping process
     Returns
     -------
         warped: a warped version of the input image in dst_shape
     """
-    img_red = filter_keep_multi_ranges(img, [color_range.RED_LOW, color_range.RED_HIGH])
+    img_red = filter_keep_multi_ranges(img, red_color_ranges)
     img_labelled_proc, filtered_regions = planvec.img_proc.find_regions(img_red, 2, 10)
 
     # Only keep 4 largest regions
@@ -225,85 +225,3 @@ def rectify_wrt_red_dots(img, dst_shape, show_plot=False, verbose=False):
         print('Rectification failed. Forwarding original image.')
         return img
 
-
-def live_color_filter(use_camera=True, img=None):
-    """Opens up a window for HSV color filtering based on camera input or an img. Let's you interactively adapt
-    HSV threshold values to filter the image."""
-    # Create a window
-    cv.namedWindow('image')
-
-    # create trackbars for color change
-    # OpenCV HSV ranges: H -> 0-179, S -> 0-255, V -> 0-255
-    def nothing(x):
-        pass
-
-    cv.createTrackbar('HMin', 'image', 0, 179, nothing)
-    cv.createTrackbar('SMin', 'image', 0, 255, nothing)
-    cv.createTrackbar('VMin', 'image', 0, 255, nothing)
-    cv.createTrackbar('HMax', 'image', 0, 179, nothing)
-    cv.createTrackbar('SMax', 'image', 0, 255, nothing)
-    cv.createTrackbar('VMax', 'image', 0, 255, nothing)
-
-    # Set default value for MAX HSV trackbars.
-    cv.setTrackbarPos('HMax', 'image', 179)
-    cv.setTrackbarPos('SMax', 'image', 255)
-    cv.setTrackbarPos('VMax', 'image', 255)
-
-    # Initialize to check if HSV min/max value changes
-    hMin = sMin = vMin = hMax = sMax = vMax = 0
-    phMin = psMin = pvMin = phMax = psMax = pvMax = 0
-
-    # Output Image to display
-    if use_camera:
-        cap = cv.VideoCapture(0)
-        # Wait longer to prevent freeze for videos.
-        wait_time = 30
-    else:
-        assert img is not None, "img parameter needs to be given if camera not used"
-        wait_time = 20
-
-    while True:
-        if use_camera:
-            # Capture frame-by-frame
-            ret, img = cap.read()
-
-        # get current positions of all trackbars
-        hMin = cv.getTrackbarPos('HMin', 'image')
-        sMin = cv.getTrackbarPos('SMin', 'image')
-        vMin = cv.getTrackbarPos('VMin', 'image')
-
-        hMax = cv.getTrackbarPos('HMax', 'image')
-        sMax = cv.getTrackbarPos('SMax', 'image')
-        vMax = cv.getTrackbarPos('VMax', 'image')
-
-        # Set minimum and max HSV values to display
-        lower = np.array([hMin, sMin, vMin])
-        upper = np.array([hMax, sMax, vMax])
-
-        # Create HSV Image and threshold into a range.
-        hsv = cv.cvtColor(img, cv.COLOR_BGR2HSV)
-        mask = cv.inRange(hsv, lower, upper)
-        output = cv.bitwise_and(img, img, mask=mask)
-
-        # Print if there is a change in HSV value
-        if ((phMin != hMin) | (psMin != sMin) | (pvMin != vMin) | (phMax != hMax) | (psMax != sMax) | (pvMax != vMax)):
-            print("(hMin = %d , sMin = %d, vMin = %d), (hMax = %d , sMax = %d, vMax = %d)" % (
-                hMin, sMin, vMin, hMax, sMax, vMax))
-            phMin = hMin
-            psMin = sMin
-            pvMin = vMin
-            phMax = hMax
-            psMax = sMax
-            pvMax = vMax
-
-        # Display output image
-        cv.imshow('image', output)
-
-        # Wait longer to prevent freeze for videos.
-        if cv.waitKey(wait_time) & 0xFF == ord('q'):
-            break
-
-    # Release resources
-    if use_camera:
-        cap.release()
-    cv.destroyAllWindows()
