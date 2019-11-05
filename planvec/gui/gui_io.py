@@ -13,7 +13,7 @@ IMG_NAME_FORMAT = '{idx}_{team}_{date_tag}{suffix}.{file_type}'
 
 
 class DataManager:
-    def __init__(self, date_tag=date_utils.get_date_tag()):
+    def __init__(self, date_tag: str = date_utils.get_date_tag()):
         self.date_tag = date_tag
         self.out_dir_path = os.path.join(DATA_DIR_PATH, date_tag)
         self.try_create_date_output_folder()
@@ -53,10 +53,11 @@ class DataManager:
         file_path = self._create_save_img_path(team_name, 'pdf', suffix, idx)
         save_output_fig(fig, file_path)
 
-    def load_team_img_names(self, team_name: str) -> List[str]:
+    def load_team_img_names(self, team_name: str, endswith: str) -> List[str]:
         """Load all the img file names of a team."""
         if self.team_dir_exists(team_name):
-            return os.listdir(os.path.join(self.out_dir_path, team_name))
+            all_files = os.listdir(os.path.join(self.out_dir_path, team_name))
+            return [f for f in all_files if f.endswith(endswith)]
         else:
             return []
 
