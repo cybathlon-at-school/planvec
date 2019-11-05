@@ -28,11 +28,12 @@ def parse_arguments():
 
 def main(parsed_args):
     data_manager = DataManager(parsed_args.date_tag)
+    print(data_manager.out_dir_path)
     pdf_jammer = PdfJammer(data_manager=data_manager,
                            out_dir=parsed_args.out_dir if parsed_args.out_dir
                            else os.path.join(DATA_DIR_PATH, parsed_args.date_tag))
-    pdfs_dict = pdf_jammer.accumulate_pdf_paths()
-    pdfs_list = pdf_jammer.teams_pdfs_paths_to_list(pdfs_dict)
+    pdfs_dict = pdf_jammer._accumulate_pdf_paths()
+    pdfs_list = pdf_jammer._teams_pdfs_paths_to_list(pdfs_dict)
     pdf_jammer.jam_pdfs(pdfs_list)
 
 
