@@ -5,21 +5,28 @@ import numpy as np
 import skimage
 
 from planvec import img_proc
+from config import CONFIG
 
 
-def plot_contours(contours, axis='off', **kwargs):
-    setup_figure(**kwargs)
-    plt.axis(axis)
+def plot_contours(contours, ax=None, axis='off', reverse_y_axis=True, **kwargs):
+    if axis == 'off':
+        ax.set_axis_off()
     linewidth = kwargs.get('linewidth') if 'linewidth' in kwargs else 1
     for n, contour in enumerate(contours):
         if 'color' in kwargs:
-            plt.plot(contour[:, 1], contour[:, 0], '-', c=kwargs.get('color'), linewidth=linewidth)
+            ax.plot(contour[:, 1], contour[:, 0], '-', c=kwargs.get('color'), linewidth=linewidth)
         else:
-            plt.plot(contour[:, 1], contour[:, 0], '-', linewidth=linewidth)
-    return plt.gcf()
+            ax.plot(contour[:, 1], contour[:, 0], '-', linewidth=linewidth)
+    # Set correct ratio
+    xlim, ylim = CONFIG.processing.rectify_shape
+    ax.set_xlim([0, xlim])
+    ax.set_ylim([0, ylim])
+    if reverse_y_axis:
+        ax.invert_yaxis()
+    return ax
 
 
-def imshow(img, axis='off', img_space='RGB', **kwargs):
+def imshow(img, axis='on', img_space='RGB', **kwargs):
     setup_figure(**kwargs)
     plt.axis(axis)
     img_copy = img_proc.copy_img(img)
@@ -44,7 +51,11 @@ def plot_image_regions(labelled_image, regionprops, **kwargs):
 
 def setup_figure(**kwargs):
     if 'figsize' in kwargs:
-        plt.figure(figsize=kwargs.get('figsize'))
+        fig = plt.figure(figsize=kwargs.get('figsize'))
     else:
-        plt.figure()
-    plt.axes().set_aspect('equal')
+        fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    if 'title' in kwargs:
+        ax.set_title(kwargs.get('title'))
+    ax.set_aspect('equal')
+    return fig, ax

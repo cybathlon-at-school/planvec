@@ -8,8 +8,10 @@ from PyQt5.QtWidgets import (QMainWindow, QLabel, QPushButton,
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtGui import QImage
 import numpy as np
+import matplotlib.pyplot as plt
 
 from planvec import conversions
+from planvec import vizualization
 from planvec.gui.gui_io import DataManager
 import planvec.pipeline
 from config import CONFIG
@@ -32,6 +34,7 @@ class PlanvecGui(QMainWindow):
         self.data_manager = DataManager()
         self.save_msg_box = None
         QShortcut(QtGui.QKeySequence("Ctrl+Q"), self, self.close)
+        QShortcut(QtGui.QKeySequence("Esc"), self, self.close)
 
     def init_ui(self):
         # Setup Main window properties
@@ -45,7 +48,10 @@ class PlanvecGui(QMainWindow):
         self.setCentralWidget(self.main_widget)
         self._create_main_layout()
         self.init_style_sheet()
-        self.show()
+        if self.config.window.full_screen:
+            self.showFullScreen()
+        else:
+            self.show()
 
     def init_style_sheet(self):
         self.setStyleSheet(
@@ -143,6 +149,7 @@ class PlanvecGui(QMainWindow):
         in the main window."""
         curr_qt_img_out = self.video_stream_thread.get_curr_out()
         curr_qt_img_in = self.video_stream_thread.get_curr_in()
+        curr_out_fig = self.video_stream_thread.get_curr_out_fig()
         if button_return.text() == '&OK':
             team_name = self.save_msg_box.get_team_name()
             if not self.data_manager.team_dir_exists(team_name):
@@ -152,10 +159,9 @@ class PlanvecGui(QMainWindow):
                 if CONFIG.data.overwrite_output:
                     self.data_manager.delete_all_team_imgs(team_name)
                 img_idx = self.data_manager.get_next_team_img_idx(team_name)
-                self.data_manager.save_image(team_name, curr_qt_img_in,
-                                             '_original', idx=img_idx)
-                self.data_manager.save_image(team_name, curr_qt_img_out,
-                                             '_output', idx=img_idx)
+                self.data_manager.save_qt_image(team_name, curr_qt_img_in, '_original', idx=img_idx)
+                self.data_manager.save_qt_image(team_name, curr_qt_img_out, '_output', idx=img_idx)
+                self.data_manager.save_pdf(team_name, curr_out_fig, '_output', idx=img_idx)
                 save_msg_box = QMessageBox()
                 save_msg_box.setText(f'Bilder gespeichert für Gruppe: {team_name}')
                 save_msg_box.exec_()
@@ -165,21 +171,23 @@ class PlanvecGui(QMainWindow):
             raise ValueError('Cannot handle this button return.')
 
 
-def process_frame(bgr_frame: np.ndarray, do_canny: bool) -> QImage:
+def process_frame(bgr_frame: np.ndarray, do_canny: bool, ax) -> (plt.Axes, QImage):
     """Main function which takes the camera bgr_frame (bgr_frame since opencv) and
     processes it such that the resulting image (QImage format) can be displayed
     next to the input image."""
+    ax.clear()
     if do_canny:
         rgb_img = conversions.bgr2rgb(bgr_frame)
         gray_img = cv2.cvtColor(rgb_img, cv2.COLOR_RGB2GRAY)
         edged = cv2.Canny(gray_img, 50, 100)
-        canny_qt_img = conversions.gray2qt(edged)
-        return canny_qt_img
+        qt_img_processed = conversions.gray2qt(edged)
 
-    qt_img_processed = planvec.pipeline.run_pipeline(bgr_frame.copy(),
-                                                     verbose=False,
-                                                     visualize_steps=False)
-    return qt_img_processed
+    else:
+        ax, qt_img_processed = planvec.pipeline.run_pipeline(bgr_frame.copy(),
+                                                         ax=ax,
+                                                         verbose=False,
+                                                         visualize_steps=False)
+    return ax, qt_img_processed
 
 
 class VideoStreamThread(QtCore.QThread):
@@ -191,6 +199,8 @@ class VideoStreamThread(QtCore.QThread):
         self.do_canny = do_canny
         self.curr_qt_img_input = None
         self.curr_qt_img_out = None
+        self.out_fig, self.out_ax = vizualization.setup_figure()
+
         self.stopped = False
 
     @QtCore.pyqtSlot()
@@ -202,6 +212,9 @@ class VideoStreamThread(QtCore.QThread):
 
     def get_curr_in(self) -> QImage:
         return self.curr_qt_img_input
+
+    def get_curr_out_fig(self) -> plt.Figure:
+        return self.out_fig
 
     def run(self) -> None:
         capture = cv2.VideoCapture(CAM_MAP[self.video_config.camera])
@@ -218,8 +231,9 @@ class VideoStreamThread(QtCore.QThread):
                 if ret:
                     # bgr_frame = np.fliplr(bgr_frame)  # slow but for builtin cam
                     self.curr_qt_img_input = conversions.bgr2qt(bgr_frame)
-                    self.curr_qt_img_out = process_frame(bgr_frame,
-                                                         self.do_canny)
+                    self.out_ax, self.curr_qt_img_out = process_frame(bgr_frame,
+                                                         self.do_canny,
+                                                         self.out_ax)
 
                     self.change_pixmap_signal.emit(self.curr_qt_img_input,
                                                    self.curr_qt_img_out)
