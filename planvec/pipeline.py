@@ -17,12 +17,11 @@ RED_COLOR_RANGES = [color_range for key, color_range in COLOR_RANGES.items() if 
 def run_pipeline(img, ax, visualize_steps=False, verbose=False, return_np_arr=True, return_fig=False, save_pdf_path=None):
     """Full processing pipeline for an incoming image producing end-to-end the final figure which then can be
     stored as a pdf."""
-    if verbose:
-        print(f'Input image shape: {img.shape}')
 
     if visualize_steps:
         vizualization.imshow(img, figsize=DEFAULT_FIG_SIZE, img_space='BGR', title='Input image')
     # ----- Process image, stretch to dots -----
+
     img = img_proc.rectify_wrt_red_dots(img, CONFIG.processing.rectify_shape, RED_COLOR_RANGES,
                                         show_plot=visualize_steps, verbose=verbose)
 
@@ -47,8 +46,8 @@ def run_pipeline(img, ax, visualize_steps=False, verbose=False, return_np_arr=Tr
     # ----- Labelling connected regions -----
     labelled_img, n = skimage.measure.label(img, background=0, return_num=True)
     regions = skimage.measure.regionprops(labelled_img)
-    if verbose:
-        print(f'Found {n} regions.')
+    # TODO(matt): Clear stuff up and use find / filter regions functions properly.
+
     if visualize_steps:
         vizualization.imshow(labelled_img, figsize=DEFAULT_FIG_SIZE, img_space='BGR',
                              title='Regions before filter')

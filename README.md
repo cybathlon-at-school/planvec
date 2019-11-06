@@ -10,7 +10,7 @@ Vectorizes a captured image of a drawn construction plan component.
     ```python -m ipykernel install --user --name planvec --display-name "planvec env"```
 4) Install **pdfunite** (contained in poppler-utils)  
     ```sudo apt install sudo apt-get install poppler-utils```
-5) Install **pdfjam** (contained in texlive-extra-utils)  
+5) Install **pdfjam** (contained in texlive-extra-utils) - takes a few minutes  
     ```sudo apt-get install texlive-extra-utils ```
 
 ## How to use?
@@ -29,6 +29,23 @@ This will run the main GUI to convert drawings to pdfs.
 Utility to arrange the output from all teams into one or more pdf's ready for laser cutting. The <date-tag> 
 is in the format yyyy-mm-dd, e.g. 2019-11-05, and is used to select the output folder to gather 
 pdf files from.
+```python pdf_jammer.py --help``` yields    
+```
+usage: pdf_jammer.py [-h] -d DATE_TAG [-o OUT_DIR]
+
+Arrange the single pdf outputs of a planvec session into one or more laser-
+cutting ready pdfs.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -d DATE_TAG, --date-tag DATE_TAG
+                        Specify the date of the session you want to process,
+                        e.g. "2019-31-05".
+  -o OUT_DIR, --out-dir OUT_DIR
+                        Absolute path - location to store created output
+                        pdf's. Defaults to session folder given by --date-tag
+                        field.
+```
 
 #### color_filter_app.py
 ```python color_filter_app.py```  
