@@ -36,7 +36,7 @@ config_dict = {
         'out_size_inches':          (7.87402, 5.51181),  # TODO: fix scaling
     },
     'data': {
-        'overwrite_output':    True
+        'overwrite_output':         False
     }
 }
 
