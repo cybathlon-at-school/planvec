@@ -42,7 +42,7 @@ class PlanvecGui(QMainWindow):
         self.setGeometry(self.config.window.left, self.config.window.top,
                          self.config.window.width, self.config.window.height)
         # Status Bar the bottom
-        self.statusBar().showMessage('Systems charged, Master.')
+        self.statusBar().showMessage('Press "Esc" or "Ctrl+Q" to exit.')
 
         # Main Layout
         self.setCentralWidget(self.main_widget)
