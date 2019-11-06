@@ -28,6 +28,8 @@ def parse_arguments():
 
 
 def main(parsed_args):
+    EQUS = 30 * '='
+    print(f'{EQUS} PDF JAMMER {EQUS}\t')
     data_manager = DataManager(parsed_args.date_tag)
     pdf_jammer = PdfJammer(data_manager=data_manager,
                            out_dir=parsed_args.out_dir if parsed_args.out_dir
@@ -35,7 +37,7 @@ def main(parsed_args):
     pdfs_dict = pdf_jammer.accumulate_pdf_paths()
     pdf_paths_list = pdf_jammer.teams_pdfs_paths_to_list(pdfs_dict)
     pdf_jammer.run(pdf_paths_list)
-
+    print(f'{EQUS}==========={EQUS}\t')
 
 if __name__ == '__main__':
     main(parse_arguments())
