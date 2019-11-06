@@ -62,7 +62,7 @@ class DataManager:
             return []
 
     def get_next_team_img_idx(self, team_name: str) -> int:
-        team_img_names = self.load_team_img_names(team_name)
+        team_img_names = self.load_team_img_names(team_name, endswith='jpeg')
         img_indices = sorted([int(name.split('_')[0]) for name in team_img_names])
         if len(img_indices) == 0:
             return 0
@@ -75,7 +75,7 @@ class DataManager:
 
     def delete_all_team_imgs(self, team_name: str):
         """Caution: This method deletes all output images stored for a team."""
-        team_img_names = self.load_team_img_names(team_name)
+        team_img_names = self.load_team_img_names(team_name, endswith='jpeg')
         for img in team_img_names:
             os.remove(os.path.join(os.path.join(self.out_dir_path, team_name, img)))
 
