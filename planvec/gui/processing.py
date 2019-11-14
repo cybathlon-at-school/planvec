@@ -10,13 +10,23 @@ from planvec import vizualization, conversions
 from planvec.gui.video_stream import FrameBuffer
 
 
-class FrameRate:
+class FrameRateCounter:
     """Calculate the frame rate for a series of actions (processed images)."""
-    def __init__(self):
-        self.event_queue = Queue()
+    def __init__(self, buffer_size=3) -> None:
+        self.buffer_size = buffer_size
+        self.block_start_time = time()
+        self.event_count = 0
+        self.frame_rate = 0
 
-    def add_event(self, time: float) -> None:
-        self.event_queue.put(time)
+    def event_happened(self) -> None:
+        self.event_count += 1
+        if self.event_count % self.buffer_size == 0:
+            self.frame_rate = self.event_count / (time() - self.block_start_time)
+            self.event_count = 0
+            self.block_start_time = time()
+
+    def get_frame_rate(self) -> float:
+        return self.frame_rate
 
 
 class ImgProcessThread(QtCore.QThread):
@@ -65,17 +75,12 @@ class ImgProcessThread(QtCore.QThread):
         return ax, qt_img_processed
 
     def run(self) -> None:
-        fr_block_start_time = time()
-        n_events = 0
+        frame_rate_counter = FrameRateCounter(buffer_size=5)
         while True:
             bgr_frame = self.frame_buffer.get()
             self.out_ax, self.curr_qt_img_out = self.process_frame(bgr_frame, do_canny=self.do_canny, ax=self.out_ax)
             self.curr_qt_img_input = conversions.bgr2qt(bgr_frame)
             self.change_pixmap_signal.emit(self.curr_qt_img_input, self.curr_qt_img_out)
-            n_events += 1
-            if n_events % 3 == 0:
-                block_time = time() - fr_block_start_time
-                frame_rate = n_events / block_time
-                self.frame_rate_signal.emit(f'Frame rate (last 3 frames): {round(frame_rate, 2)}')
-                fr_block_start_time = time()
-                n_events = 0
+            frame_rate_counter.event_happened()
+            self.frame_rate_signal.emit(f'Frame rate (last {frame_rate_counter.buffer_size} frames): '
+                                        f'{round(frame_rate_counter.get_frame_rate(), 2)}')
