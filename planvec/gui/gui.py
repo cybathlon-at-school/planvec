@@ -1,35 +1,28 @@
-import cv2
-import time
-import warnings
 from functools import partial
 from PyQt5.QtWidgets import (QMainWindow, QLabel, QPushButton,
                              QHBoxLayout, QVBoxLayout,
                              QGridLayout, QWidget, QMessageBox, QLineEdit, QShortcut)
 from PyQt5 import QtCore, QtGui
-from PyQt5.QtGui import QImage
-import numpy as np
-import matplotlib.pyplot as plt
 
-from planvec import conversions
-from planvec import vizualization
 from planvec.gui.gui_io import DataManager
-import planvec.pipeline
+from planvec.gui.processing import ImgProcessThread
+from planvec.gui.video_stream import FrameBuffer, VideoStreamThread
 from config import CONFIG
-
-CAM_MAP = {'USB': 1, 'BUILTIN': 0}
+from dotmap import DotMap
+from typing import Callable
 
 
 class PlanvecGui(QMainWindow):
-    """Main class for the PlanvecGui representing the
-    main window and components."""
+    """Main class for the PlanvecGui representing the main window and components."""
 
     toggle_canny_signal = QtCore.pyqtSignal()  # signal which toggles the image processing to canny edge detection
 
-    def __init__(self, gui_config):
+    def __init__(self, gui_config: DotMap) -> None:
         super().__init__()
         self.config = gui_config
         self.main_widget = QWidget()
         self.video_stream_thread = None
+        self.frame_buffer = FrameBuffer()
         self.init_ui()
         self.data_manager = DataManager()
         self.save_msg_box = None
@@ -92,11 +85,17 @@ class PlanvecGui(QMainWindow):
         the VideoStreamThread QImage signal to the self.video_callback function which sets the pix maps
         of the video labels."""
         vid_label, proc_label = QLabel(self), QLabel(self)
-        self.video_stream_thread = VideoStreamThread(parent=self.main_widget,
+        self.video_stream_thread = VideoStreamThread(frame_buffer=self.frame_buffer,
+                                                     parent=self.main_widget,
                                                      video_config=self.config.video)
-        self.video_stream_thread.change_pixmap_signal.connect(
-            partial(self.video_callback, vid_label, proc_label))
         self.video_stream_thread.start()
+        self.proc_stream_thread = ImgProcessThread(frame_buffer=self.frame_buffer,
+                                                   parent=self.main_widget)
+        self.proc_stream_thread.change_pixmap_signal.connect(
+            partial(self.video_callback, vid_label, proc_label)
+        )
+        self.proc_stream_thread.start()
+        self.proc_stream_thread.frame_rate_signal.connect(self._status_msg_callback)
         print('Video stream started.')
         return vid_label, proc_label
 
@@ -106,6 +105,7 @@ class PlanvecGui(QMainWindow):
         in_pixmap = QtGui.QPixmap.fromImage(orig_image)
         out_pixmap = QtGui.QPixmap.fromImage(final_image)
 
+        # TODO: Choose aspect ratio of drawing area to match the initial input aspect to have equal size output
         in_pixmap = in_pixmap.scaled(self.config.video.display_width, self.config.video.display_height,
                                      QtCore.Qt.KeepAspectRatio)
         out_pixmap = out_pixmap.scaled(self.config.video.display_width, self.config.video.display_height,
@@ -114,7 +114,11 @@ class PlanvecGui(QMainWindow):
         video_label.setPixmap(in_pixmap)
         proc_label.setPixmap(out_pixmap)
 
-    def _create_btns_layout(self):
+    def _status_msg_callback(self, status_msg: str) -> None:
+        # exit_msg = 'Press "Esc" or "Ctrl+Q" to exit.'
+        self.statusBar().showMessage(f'{status_msg}')
+
+    def _create_btns_layout(self) -> QHBoxLayout:
         """This is a box with holding various buttons."""
         btns_layout = QHBoxLayout()
         save_btn = QPushButton("Save!")
@@ -122,12 +126,12 @@ class PlanvecGui(QMainWindow):
         save_btn.clicked.connect(self.save_img_dialog)
         dummy_btn = QPushButton("Toggle Canny!")
         dummy_btn.setStyleSheet("background-color: #E67E22")
-        dummy_btn.clicked.connect(self.video_stream_thread.toggle_canny_slot)
+        dummy_btn.clicked.connect(self.proc_stream_thread.toggle_canny_slot)
         btns_layout.addWidget(save_btn)
         btns_layout.addWidget(dummy_btn)
         return btns_layout
 
-    def _create_pixmap_label(self, file_path, width=None):
+    def _create_pixmap_label(self, file_path: str, width: int = None) -> QLabel:
         label = QLabel(self)
         pixmap = QtGui.QPixmap(file_path)
         if width:
@@ -144,12 +148,13 @@ class PlanvecGui(QMainWindow):
         self.video_stream_thread.toggle_stopped()
 
     def save_img_btn(self, button_return):
+        # TODO: Typing!
         """This function gets called when the user presses the Save or Cancel
         buttons in the QMessageBox which pops up when the user presses Save
         in the main window."""
-        curr_qt_img_out = self.video_stream_thread.get_curr_out()
-        curr_qt_img_in = self.video_stream_thread.get_curr_in()
-        curr_out_fig = self.video_stream_thread.get_curr_out_fig()
+        curr_qt_img_out = self.proc_stream_thread.get_curr_out()
+        curr_qt_img_in = self.proc_stream_thread.get_curr_in()
+        curr_out_fig = self.proc_stream_thread.get_curr_out_fig()
         if button_return.text() == '&OK':
             team_name = self.save_msg_box.get_team_name()
             if not self.data_manager.team_dir_exists(team_name):
@@ -171,80 +176,8 @@ class PlanvecGui(QMainWindow):
             raise ValueError('Cannot handle this button return.')
 
 
-def process_frame(bgr_frame: np.ndarray, do_canny: bool, ax) -> (plt.Axes, QImage):
-    """Main function which takes the camera bgr_frame (bgr_frame since opencv) and
-    processes it such that the resulting image (QImage format) can be displayed
-    next to the input image."""
-    ax.clear()
-    if do_canny:
-        rgb_img = conversions.bgr2rgb(bgr_frame)
-        gray_img = cv2.cvtColor(rgb_img, cv2.COLOR_RGB2GRAY)
-        edged = cv2.Canny(gray_img, 50, 100)
-        qt_img_processed = conversions.gray2qt(edged)
-
-    else:
-        ax, qt_img_processed = planvec.pipeline.run_pipeline(bgr_frame.copy(),
-                                                         ax=ax,
-                                                         verbose=False,
-                                                         visualize_steps=False)
-    return ax, qt_img_processed
-
-
-class VideoStreamThread(QtCore.QThread):
-    change_pixmap_signal = QtCore.pyqtSignal(QtGui.QImage, QtGui.QImage)
-
-    def __init__(self, video_config, parent=None, do_canny=True):
-        super().__init__(parent=parent)
-        self.video_config = video_config
-        self.do_canny = do_canny
-        self.curr_qt_img_input = None
-        self.curr_qt_img_out = None
-        self.out_fig, self.out_ax = vizualization.setup_figure()
-
-        self.stopped = False
-
-    @QtCore.pyqtSlot()
-    def toggle_canny_slot(self) -> None:
-        self.do_canny = not self.do_canny
-
-    def get_curr_out(self) -> QImage:
-        return self.curr_qt_img_out
-
-    def get_curr_in(self) -> QImage:
-        return self.curr_qt_img_input
-
-    def get_curr_out_fig(self) -> plt.Figure:
-        return self.out_fig
-
-    def run(self) -> None:
-        capture = cv2.VideoCapture(CAM_MAP[self.video_config.camera])
-        if not capture.isOpened():
-            capture = cv2.VideoCapture(abs(1 - CAM_MAP[self.video_config.camera]))
-            warnings.warn(f'Needed to switch camera choice!')
-            if not capture.isOpened():
-                raise RuntimeError(f'Couldn\'t connect to camera! Tried all of {list(CAM_MAP.keys())}')
-        capture.set(cv2.CAP_PROP_FRAME_WIDTH, self.video_config.max_input_width)
-        capture.set(cv2.CAP_PROP_FRAME_HEIGHT, self.video_config.max_input_height)
-        while True:
-            if not self.stopped:
-                ret, bgr_frame = capture.read()  # frame is BGR since OpenCV format
-                if ret:
-                    # bgr_frame = np.fliplr(bgr_frame)  # slow but for builtin cam
-                    self.curr_qt_img_input = conversions.bgr2qt(bgr_frame)
-                    self.out_ax, self.curr_qt_img_out = process_frame(bgr_frame,
-                                                         self.do_canny,
-                                                         self.out_ax)
-
-                    self.change_pixmap_signal.emit(self.curr_qt_img_input,
-                                                   self.curr_qt_img_out)
-                time.sleep(0.05)
-
-    def toggle_stopped(self):
-        self.stopped = not self.stopped
-
-
 class SaveMsgBox(QMessageBox):
-    def __init__(self, save_slot, data_manager, parent=None):
+    def __init__(self, save_slot: Callable, data_manager: DataManager, parent=None) -> None:
         super(SaveMsgBox, self).__init__(parent)
         self.save_slot = save_slot
         self.data_manager = data_manager
@@ -284,7 +217,7 @@ class SaveMsgBox(QMessageBox):
 
 
 class TeamDirDialog(QMessageBox):
-    def __init__(self, team_name, data_manager, parent=None):
+    def __init__(self, team_name: str, data_manager: DataManager, parent=None) -> None:
         super(TeamDirDialog, self).__init__(parent)
         self.team_name = team_name
         self.data_manager = data_manager

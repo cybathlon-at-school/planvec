@@ -18,13 +18,14 @@ from PIL import ImageTk
 from PyQt5 import QtCore
 from PyQt5.QtGui import QImage
 
+from planvec.utils.timing import timeit
 
 #############################################################################
 #                                                                           #
 # Input: Matplotlib Figure                                                  #
 #                                                                           #
 #############################################################################
-
+@timeit
 def fig2data(fig):
     """Convert a Matplotlib figure to a 4D numpy array with RGBA 
     channels and return it.
@@ -49,6 +50,7 @@ def fig2data(fig):
     return buf
 
 
+@timeit
 def fig2img(fig):
     """Convert a Matplotlib figure to a PIL Image in RGBA format and return it
     Arguments
@@ -70,29 +72,30 @@ def fig2img(fig):
 # Note: An rgb_img or bgr_img is assumed to be a numpy ndarray.             #
 #                                                                           #
 #############################################################################
-
+@timeit
 def rgb2bgr(rgb_img) -> np.ndarray:
     return cv2.cvtColor(rgb_img, cv2.COLOR_RGB2BGR)
 
-
+@timeit
 def bgr2rgb(bgr_img) -> np.ndarray:
     return cv2.cvtColor(bgr_img, cv2.COLOR_BGR2RGB)
 
-
+@timeit
 def bgr2imgpil(bgr_img) -> ImagePil:
     return ImagePil.fromarray(bgr2rgb(bgr_img))
 
-
+@timeit
 def rgb2imgpil(rgb_img) -> ImagePil:
     return ImagePil.fromarray(rgb_img)
 
-
+@timeit
 def np_ndarray2imgpil(np_ndarray) -> ImagePil:
     # TODO: Remove and update tk gui.
     return ImagePil.fromarray(np_ndarray)
 
 
 # ----- Conversions to Tkinter ImageTk format. -----
+@timeit
 def bgr2imgtk(bgr_img) -> ImageTk:
     image = cv2.cvtColor(bgr_img, cv2.COLOR_BGR2RGB)
     image = ImagePil.fromarray(image)
@@ -101,6 +104,7 @@ def bgr2imgtk(bgr_img) -> ImageTk:
 
 
 # ----- Conversions to PyQt QImage format. -----
+@timeit
 def rgb2qt(rgb_img) -> QImage:
     height, width, n_channels = rgb_img.shape
     bytes_per_line = n_channels * width
@@ -108,11 +112,11 @@ def rgb2qt(rgb_img) -> QImage:
                   bytes_per_line,
                   QImage.Format_RGB888)
 
-
+@timeit
 def bgr2qt(bgr_img):
     return rgb2qt(bgr2rgb(bgr_img))
 
-
+@timeit
 def gray2qt(gray_img):
     rgb_img = np.asarray(
         np.dstack((gray_img, gray_img, gray_img)), dtype=np.uint8)
@@ -124,7 +128,7 @@ def gray2qt(gray_img):
 # Input: Pillow image.                                                      #
 #                                                                           #
 #############################################################################
-
+@timeit
 def imgpil2imgtk(img_pil):
     return ImageTk.PhotoImage(img_pil)
 
@@ -135,7 +139,7 @@ def imgpil2imgtk(img_pil):
 #                                                                           #
 #############################################################################
 
-
+@timeit
 def qtimg2pilimg(qimage: QImage) -> ImagePil:
     """
     Convert qimage to PIL.Image
@@ -155,7 +159,7 @@ def qtimg2pilimg(qimage: QImage) -> ImagePil:
     img_pil = ImagePil.open(bio)
     return img_pil
 
-
+@timeit
 def qtimg2bgr(qt_img):
     qt_img = qt_img.copy()
     qt_img = qt_img.convertToFormat(4)
@@ -164,6 +168,6 @@ def qtimg2bgr(qt_img):
     arr = np.array(ptr).reshape(qt_img.height(), qt_img.width(), 4)
     return arr
 
-
+@timeit
 def qtimg2rgb(qt_img):
     return bgr2rgb(qtimg2bgr(qt_img))

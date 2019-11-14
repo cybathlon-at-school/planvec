@@ -2,15 +2,27 @@
 Vectorizes a captured image of a drawn construction plan component.
 
 ## Installation
-1) Install **pyenv** and python version **3.6.9**.  
-    For instructions, see https://github.com/pyenv/pyenv.
-2) Install **pipenv** and do ```pipenv install``` before ```pipenv shell``` inside planvec.  
+TODO: All of this could go into an install script. OR: Use a docker container :)
+0) Make sure git is installed. If not (e.g. on a new machine): ```sudo apt install git```.  
+0) Install zlib ```sudo apt-get install zlib1g-dev```.
+0) Install pip ```sudo apt install python-pip```.
+1) Clone this repo to a location of your choice.
+2) Install **pyenv**.
+    For instructions, see https://github.com/pyenv/pyenv.  
+    Also run (from pyenv common build problems)
+    ```sudo apt-get install -y make build-essential libssl-dev zlib1g-dev libbz2-dev \
+    libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev \
+    xz-utils tk-dev libffi-dev liblzma-dev python-openssl
+   ```
+2) Install python 3.6.9 with pyenv ```pyenv install 3.6.9```
+3) Install **pipenv** and do ```pipenv install``` before ```pipenv shell``` inside planvec.  
     For instructions, see https://github.com/pypa/pipenv.
-3) Install a new **ipykernel** to be used inside a **jupyter notebook**:  
+4) Go to your cloned repo and do ```pipenv install``` and ```pipenv shell```.
+4) Install a new **ipykernel** to be used inside a **jupyter notebook**:  
     ```python -m ipykernel install --user --name planvec --display-name "planvec env"```
-4) Install **pdfunite** (contained in poppler-utils)  
-    ```sudo apt install sudo apt-get install poppler-utils```
-5) Install **pdfjam** (contained in texlive-extra-utils) - takes a few minutes  
+5) Install **pdfunite** (contained in poppler-utils)  
+    ```sudo apt install install poppler-utils```
+6) Install **pdfjam** (contained in texlive-extra-utils) - takes a few minutes  
     ```sudo apt-get install texlive-extra-utils ```
 
 ## How to use?

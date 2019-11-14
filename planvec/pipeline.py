@@ -22,9 +22,10 @@ def run_pipeline(img, ax, visualize_steps=False, verbose=False, return_np_arr=Tr
         vizualization.imshow(img, figsize=DEFAULT_FIG_SIZE, img_space='BGR', title='Input image')
     # ----- Process image, stretch to dots -----
 
-    img = img_proc.rectify_wrt_red_dots(img, CONFIG.processing.rectify_shape, RED_COLOR_RANGES,
-                                        show_plot=visualize_steps, verbose=verbose)
-
+    img, warped_ok = img_proc.rectify_wrt_red_dots(img, CONFIG.processing.rectify_shape, RED_COLOR_RANGES,
+                                                   show_plot=visualize_steps, verbose=verbose)
+    if not warped_ok:
+        return ax, conversions.bgr2qt(img)
     # ----- Add Gaussian Blur before filtering colors -----
     img = img_proc.add_gaussian_blur(img, *CONFIG.processing.gaussian_blur)
 
@@ -63,7 +64,7 @@ def run_pipeline(img, ax, visualize_steps=False, verbose=False, return_np_arr=Tr
                                          title='Image regions filtered with boxes')
 
     # ----- Find and filter contours of connected regions -----
-    contours = img_proc.find_contours(img_labelled_proc != 0, 0)
+    contours = img_proc.find_contours(img_labelled_proc != 0, level=0)
     contours = img_proc.filter_contours_by_size(contours, n_points_thresh=CONFIG.processing.contours_size_threshold)
 
     # ----- Approximate contours by polygons to smooth outline ------

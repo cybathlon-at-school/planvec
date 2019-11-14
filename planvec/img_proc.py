@@ -56,7 +56,7 @@ def create_hsv_range_mask(img, hsv_color_range: HSVColorRange):
 @timeit
 def filter_keep_by_hsv_range(img, hsv_color_range: HSVColorRange):
     """Returns an image where only pixels are kept with their values which fall into a HSV range between
-    range_start, e.g. [0, 0, 0] and range_end, e.g. [179, 255, 255] or any values inbetween those bounds."""
+    range_start, e.g. [0, 0, 0] and range_end, e.g. [179, 255, 255] or any values in-between those bounds."""
     mask = create_hsv_range_mask(img, hsv_color_range)
     return cv.bitwise_and(img, img, mask=mask)
 
@@ -102,8 +102,8 @@ def adaptive_thresh_img(img):
 
 
 @timeit
-def find_contours(img, value):
-    contours = skimage.measure.find_contours(img, value)
+def find_contours(img, level):
+    contours = skimage.measure.find_contours(img, level=level)
     return contours
 
 
@@ -120,7 +120,7 @@ def find_regions(img, area_threshold, intens_threshold):
     """
     # Threshold processing
     img = planvec.img_proc.img_to_greyscale(img)
-    img = planvec.img_proc.add_gaussian_blur(img, 5, 5)
+    img = planvec.img_proc.add_gaussian_blur(img, std_x=3, std_y=3)
     img_thresh = planvec.img_proc.thresh_img(img, thresh_val=intens_threshold, max_val=255, thresh_type=cv.THRESH_BINARY)
     labelled_img, n = skimage.measure.label(img_thresh, background=0, return_num=True)
     regions = skimage.measure.regionprops(labelled_img)
@@ -137,7 +137,6 @@ def filter_regions(labelled_img, regionprops, area_threshold, verbose=False):
 
     #TODO: specify args and returns
     """
-    print(len(regionprops))
     filtered_regions = []
     for region in regionprops:
         region_mask = labelled_img == region.label
@@ -193,7 +192,7 @@ def warp_image(img, src_points, dst_points, final_size, show_plot=False):
 
 
 @timeit
-def rectify_wrt_red_dots(img, dst_shape, red_color_ranges, show_plot=False, verbose=False):
+def rectify_wrt_red_dots(img, dst_shape, red_color_ranges, n_dots=4, show_plot=False, verbose=False):
     """This function assumes we have four red dots in an image which represent the convex hull in a rectangular
     shape. When taking an image the camera is likely to take the picture a little bit from the side and distortion
     effects may take place. This function rectifies the image such that the four red dots form the outer boundary
@@ -207,16 +206,14 @@ def rectify_wrt_red_dots(img, dst_shape, red_color_ranges, show_plot=False, verb
         show_plot: if True, shows plot of before and after warping process
     Returns
     -------
-        warped: a warped version of the input image in dst_shape
+        (warped, success): a warped version of the input image in dst_shape and a boolean whether warping worked
     """
     img_red = filter_keep_multi_ranges(img, red_color_ranges)
-    img_labelled_proc, filtered_regions = planvec.img_proc.find_regions(img_red, 2, 10)
-
-    # Only keep 4 largest regions
-    regions_sorted_by_area = sorted(filtered_regions, key=lambda region: region.area, reverse=True)
-    filtered_regions = regions_sorted_by_area[:4]
-
-    corner_centroids = [(region.centroid[1], region.centroid[0]) for region in filtered_regions]
+    img_labelled_proc, filtered_regions = planvec.img_proc.find_regions(img_red, area_threshold=2, intens_threshold=10)
+    if len(filtered_regions) != 4:
+        # Rectification only works if we find 4 corners, else we return the original image and signal no success
+        return img, False
+    filtered_regions = sorted(filtered_regions, key=lambda region: region.area, reverse=True)
     """
     We need to sort corner_centroids such that they map correctly to the new corners.
     1 - 3
@@ -224,27 +221,16 @@ def rectify_wrt_red_dots(img, dst_shape, red_color_ranges, show_plot=False, verb
     2 - 4
     Therefore we first sort by lateral x-direction and then by vertical y-direction.
     """
+    @timeit
     def sort_points_clockwise(coords):
         center = tuple(map(operator.truediv, reduce(lambda x, y: map(operator.add, x, y), coords), [len(coords)] * 2))
         return sorted(coords, key=lambda coord: (-135 - math.degrees(math.atan2(*tuple(map(operator.sub, coord, center))[::-1]))) % 360)
-
+    corner_centroids = sort_points_clockwise([(region.centroid[1], region.centroid[0]) for region in filtered_regions])
     new_corners = [[0, 0], [0, dst_shape[1]], [dst_shape[0], dst_shape[1]], [dst_shape[0], 0]]
-    # assert len(corner_centroids) == 4, f'Corner extraction failed. Extracted {len(corner_centroids)} but 4 expected.'
-    if len(corner_centroids) == 4:
-        corner_centroids = sort_points_clockwise(corner_centroids)
-        warped = warp_image(img, corner_centroids, new_corners, dst_shape, show_plot=show_plot)
-        if verbose:
-            pass
-            # print(DEBUG_BARS)
-            # print(f'Warping image wrt corners. Found {len(corner_centroids)} corners at positions\n'
-            #       f'{np.array(corner_centroids).round(decimals=2)}\nMapped to \n{np.array(new_corners)}.\nNew image size: {dst_shape}.')
-        return warped
-    else:
-        if verbose:
-            pass
-            # print(DEBUG_BARS)
-            # print(f'Warping image wrt corners failed. Found {len(corner_centroids)} corners at positions\n'
-            #       f'found {len(corner_centroids)} red dots at\n{np.array(corner_centroids).round(decimals=2)}')
-        # print('Rectification failed. Forwarding original image.')
-        return img
+    warped = warp_image(img, corner_centroids, new_corners, dst_shape, show_plot=show_plot)
+    if verbose:
+        print(DEBUG_BARS)
+        print(f'Warping image wrt corners. Found {len(corner_centroids)} corners at positions\n'
+              f'{np.array(corner_centroids).round(decimals=2)}\nMapped to \n{np.array(new_corners)}.\nNew image size: {dst_shape}.')
+    return warped, True
 

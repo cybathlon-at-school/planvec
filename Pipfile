@@ -21,6 +21,7 @@ pandas = "==0.22.0"
 seaborn = "*"
 pyqt5-stubs = "*"
 pypdf2 = "*"
+xlrd = "*"
 
 [requires]
 python_version = "3.6.9"

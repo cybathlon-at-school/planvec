@@ -16,7 +16,8 @@ config_dict = {
         'max_input_width':          1920,   # high res: 1920, low res: 640
         'max_input_height':         1080,   # high res: 1080, low res: 480
         'display_width':            850,
-        'display_height':           900
+        'display_height':           900,
+        'frame_buffer_size':        1
     },
     'color_range': {
         # 'blue':                     #HSVColorRange([91,  100,  20],  [160, 255, 255]),

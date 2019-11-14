@@ -4,7 +4,7 @@ from planvec import gui
 
 # import the necessary packages
 import tkinter as tk
-from planvec.gui import PlanvecGui
+from planvec.gui import gui
 # from imutils.video import VideoStream, WebcamVideoStream
 import argparse
 import time
@@ -57,8 +57,8 @@ def main():
     video_stream = get_video_stream(args)
 
     root = tk.Tk()
-    app = PlanvecGui(master=root, video_stream=video_stream, output_path=args["output"],
-                     edge_mode=args['edge'], debug_input=args['debug_input'], test_img=args['test_data'])
+    app = gui(master=root, video_stream=video_stream, output_path=args["output"],
+              edge_mode=args['edge'], debug_input=args['debug_input'], test_img=args['test_data'])
     app.mainloop()
 
 

@@ -5,9 +5,11 @@ import numpy as np
 import skimage
 
 from planvec import img_proc
+from planvec.utils.timing import timeit
 from config import CONFIG
 
 
+@timeit
 def plot_contours(contours, ax=None, axis='off', reverse_y_axis=True, **kwargs):
     if axis == 'off':
         ax.set_axis_off()
@@ -26,6 +28,7 @@ def plot_contours(contours, ax=None, axis='off', reverse_y_axis=True, **kwargs):
     return ax
 
 
+@timeit
 def imshow(img, axis='on', img_space='RGB', **kwargs):
     setup_figure(**kwargs)
     plt.axis(axis)
@@ -39,6 +42,7 @@ def imshow(img, axis='on', img_space='RGB', **kwargs):
         plt.imshow(img_copy)
 
 
+@timeit
 def plot_image_regions(labelled_image, regionprops, **kwargs):
     imshow(labelled_image, img_space='BGR', **kwargs)
 
@@ -49,6 +53,7 @@ def plot_image_regions(labelled_image, regionprops, **kwargs):
         plt.gca().add_patch(rect)
 
 
+@timeit
 def setup_figure(**kwargs):
     if 'figsize' in kwargs:
         fig = plt.figure(figsize=kwargs.get('figsize'))
