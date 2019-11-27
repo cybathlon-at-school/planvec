@@ -22,6 +22,7 @@ seaborn = "*"
 pyqt5-stubs = "*"
 pypdf2 = "*"
 xlrd = "*"
+google-cloud-vision = "*"
 
 [requires]
 python_version = "3.6.9"

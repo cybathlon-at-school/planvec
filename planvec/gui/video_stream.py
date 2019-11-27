@@ -6,7 +6,7 @@ import numpy as np
 from PyQt5 import QtCore
 
 
-CAM_MAP = {'USB': 1, 'BUILTIN': 0}
+CAM_MAP = {'USB': 0, 'BUILTIN': 1}
 
 
 class FrameBuffer(queue.Queue):
@@ -20,6 +20,7 @@ class VideoStreamThread(QtCore.QThread):
     """Grab images from video stream thread and put them into the frame buffer queue."""
     def __init__(self, frame_buffer: FrameBuffer, video_config, parent=None):
         super().__init__(parent=parent)
+        print(video_config)
         self.frame_buffer = frame_buffer
         self.video_config = video_config
         self.stopped = False
