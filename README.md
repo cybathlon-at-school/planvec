@@ -2,11 +2,10 @@
 Vectorizes a captured image of a drawn construction plan component.
 
 ## Installation
-TODO: All of this could go into an install script. OR: Use a docker container :)
 0) Make sure git is installed. If not (e.g. on a new machine): ```sudo apt install git```.  
-0) Install zlib ```sudo apt-get install zlib1g-dev```.
-0) Install pip ```sudo apt install python-pip```.
-1) Clone this repo to a location of your choice.
+0) Install zlib ```sudo apt-get install zlib1g-dev```.  
+0) Install pip ```sudo apt install python-pip```.  
+1) Clone this repo to a location of your choice.  
 2) Install **pyenv**.
     For instructions, see https://github.com/pyenv/pyenv.  
     Also run (from pyenv common build problems)
