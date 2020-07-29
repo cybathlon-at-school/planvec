@@ -32,8 +32,8 @@ cd <path/to/planvec/>
 pipenv shell
 ```
 #### qt_main_gui.py
-```python qt_main_gui.py```   
-This will run the main GUI to convert drawings to pdfs.
+```python main_gui.py```   
+This will run the main GUI to convert drawings to pdfs via vision.
 
 #### pdf_jammer.py
 ```python pdf_jammer.py <date-tag>```  
@@ -63,9 +63,6 @@ pdf files from.
 A utility tool to filter out color (ranges) from the webcam input. Can be used to determine the 
 HSV values for color filters when doing image processing.
 
-#### tk_main_gui.py
-Deprecated. Do not use.
-
 ### How-To Laser Cut
 The pdf_jammer command line tool informs you about the location of the created pdf's. This is how you laser-cut them.
 1) Get the files on the Laser-Cutter PC
@@ -80,8 +77,5 @@ The pdf_jammer command line tool informs you about the location of the created p
 6) Sent the print job which you can then position on the plate appropriately.
 7) Do not forget vector ordering.
 
-## Tests
-Description of tests and how to run. Coming soon.
-
 ## Author
-Matthäus Heer, maheer@student.ethz.ch
+Matthäus Heer, matthaeusheer@gmail.com
