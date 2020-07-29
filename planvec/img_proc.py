@@ -137,7 +137,6 @@ def filter_regions(labelled_img, regionprops, area_threshold, verbose=False):
 
     #TODO: specify args and returns
     """
-    print(len(regionprops))
     filtered_regions = []
     for region in regionprops:
         region_mask = labelled_img == region.label
