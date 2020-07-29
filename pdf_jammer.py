@@ -1,11 +1,11 @@
 """
 pdf_jammer
 
-Command line tool to load output PDF's from a session and arrange them in a grid on a
+Command line tool to load output PDFs from a session and arrange them in a grid on a
 larger PDF ready for laser cutting multiple Drawings.
 
 The tool will grab the output from all teams from a certain session (date) and concatenate them to one or multiple
-output PDF's, ready for laser cutting.
+output PDFs, ready for laser cutting.
 """
 import os
 import argparse
@@ -38,6 +38,7 @@ def main(parsed_args):
     pdf_paths_list = pdf_jammer.teams_pdfs_paths_to_list(pdfs_dict)
     pdf_jammer.run(pdf_paths_list)
     print(f'{EQUS}==========={EQUS}\t')
+
 
 if __name__ == '__main__':
     main(parse_arguments())

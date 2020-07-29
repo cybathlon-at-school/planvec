@@ -6,7 +6,7 @@ import numpy as np
 from PyQt5 import QtCore
 
 
-CAM_MAP = {'USB': 0, 'BUILTIN': 1}
+CAM_MAP = {'USB': 1, 'BUILTIN': 0}
 
 
 class FrameBuffer(queue.Queue):
@@ -26,6 +26,7 @@ class VideoStreamThread(QtCore.QThread):
         self.stopped = False
 
     def run(self) -> None:
+        print(self.video_config.camera)
         capture = cv2.VideoCapture(CAM_MAP[self.video_config.camera])
         if not capture.isOpened():
             capture = cv2.VideoCapture(abs(1 - CAM_MAP[self.video_config.camera]))

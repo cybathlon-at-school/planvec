@@ -137,6 +137,7 @@ def filter_regions(labelled_img, regionprops, area_threshold, verbose=False):
 
     #TODO: specify args and returns
     """
+    print(len(regionprops))
     filtered_regions = []
     for region in regionprops:
         region_mask = labelled_img == region.label
@@ -210,10 +211,12 @@ def rectify_wrt_red_dots(img, dst_shape, red_color_ranges, n_dots=4, show_plot=F
     """
     img_red = filter_keep_multi_ranges(img, red_color_ranges)
     img_labelled_proc, filtered_regions = planvec.img_proc.find_regions(img_red, area_threshold=2, intens_threshold=10)
-    if len(filtered_regions) != 4:
+    filtered_regions = sorted(filtered_regions, key=lambda region: region.area, reverse=True)
+    filtered_regions = filtered_regions[:4]  # only keep 4 largest regions
+    if len(filtered_regions) < 4:
         # Rectification only works if we find 4 corners, else we return the original image and signal no success
         return img, False
-    filtered_regions = sorted(filtered_regions, key=lambda region: region.area, reverse=True)
+
     """
     We need to sort corner_centroids such that they map correctly to the new corners.
     1 - 3
@@ -233,4 +236,3 @@ def rectify_wrt_red_dots(img, dst_shape, red_color_ranges, n_dots=4, show_plot=F
         print(f'Warping image wrt corners. Found {len(corner_centroids)} corners at positions\n'
               f'{np.array(corner_centroids).round(decimals=2)}\nMapped to \n{np.array(new_corners)}.\nNew image size: {dst_shape}.')
     return warped, True
-
