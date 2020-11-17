@@ -20,7 +20,7 @@ Vectorizes a captured image of a drawn construction plan component.
 4) Install a new **ipykernel** to be used inside a **jupyter notebook**:  
     ```python -m ipykernel install --user --name planvec --display-name "planvec env"```
 5) Install **pdfunite** (contained in poppler-utils)  
-    ```sudo apt install install poppler-utils```
+    ```sudo apt install poppler-utils```
 6) Install **pdfjam** (contained in texlive-extra-utils) - takes a few minutes  
     ```sudo apt-get install texlive-extra-utils ```
 
