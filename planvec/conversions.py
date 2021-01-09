@@ -14,7 +14,7 @@ import io
 import cv2
 import numpy as np
 from PIL import Image as ImagePil
-from PIL import ImageTk
+# from PIL import ImageTk
 from PyQt5 import QtCore
 from PyQt5.QtGui import QImage
 
@@ -95,13 +95,14 @@ def np_ndarray2imgpil(np_ndarray) -> ImagePil:
 
 
 # ----- Conversions to Tkinter ImageTk format. -----
+""" # TODO: Take this out permanently?
 @timeit
 def bgr2imgtk(bgr_img) -> ImageTk:
     image = cv2.cvtColor(bgr_img, cv2.COLOR_BGR2RGB)
     image = ImagePil.fromarray(image)
 
     return ImageTk.PhotoImage(image)
-
+"""
 
 # ----- Conversions to PyQt QImage format. -----
 @timeit
