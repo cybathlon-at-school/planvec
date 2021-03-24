@@ -1,12 +1,12 @@
 import os
 import matplotlib.pyplot as plt
 
-import planvec
+from context import planvec
 from planvec.common import PROJECT_ROOT_PATH
 from planvec.pipeline import run_pipeline
 from planvec import vizualization
 
-ASSETS_DIR      = os.path.join(PROJECT_ROOT_PATH, 'test', 'assets')
+ASSETS_DIR      = os.path.join(PROJECT_ROOT_PATH, '../test', 'assets')
 INPUT_IMAGE     = 'fileworks.jpeg'
 OUTPUT_PDF_NAME = 'sample_output.pdf'
 USE_CUSTOM_FILE = True
