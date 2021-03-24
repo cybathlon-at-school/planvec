@@ -6,6 +6,7 @@ running a PyQt5 Application.
 import sys
 from PyQt5.QtWidgets import QApplication
 
+import planvec
 from planvec.gui import gui
 from config import CONFIG
 

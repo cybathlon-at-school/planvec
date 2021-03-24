@@ -11,7 +11,7 @@ class Thread(QtCore.QThread):
     changePixmap = QtCore.pyqtSignal(QtGui.QImage)
 
     def run(self):
-        cap = cv2.VideoCapture(1)
+        cap = cv2.VideoCapture(0)
         while True:
             ret, frame = cap.read()
             if ret:
