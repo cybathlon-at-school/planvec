@@ -14,7 +14,7 @@ import io
 import cv2
 import numpy as np
 from PIL import Image as ImagePil
-# from PIL import ImageTk
+# from PIL import ImageTk -> deprecated
 from PyQt5 import QtCore
 from PyQt5.QtGui import QImage
 
@@ -93,17 +93,6 @@ def np_ndarray2imgpil(np_ndarray) -> ImagePil:
     # TODO: Remove and update tk gui.
     return ImagePil.fromarray(np_ndarray)
 
-
-# ----- Conversions to Tkinter ImageTk format. -----
-""" # TODO: Take this out permanently?
-@timeit
-def bgr2imgtk(bgr_img) -> ImageTk:
-    image = cv2.cvtColor(bgr_img, cv2.COLOR_BGR2RGB)
-    image = ImagePil.fromarray(image)
-
-    return ImageTk.PhotoImage(image)
-"""
-
 # ----- Conversions to PyQt QImage format. -----
 @timeit
 def rgb2qt(rgb_img) -> QImage:
@@ -122,17 +111,6 @@ def gray2qt(gray_img):
     rgb_img = np.asarray(
         np.dstack((gray_img, gray_img, gray_img)), dtype=np.uint8)
     return rgb2qt(rgb_img.copy())
-
-
-#############################################################################
-#                                                                           #
-# Input: Pillow image.                                                      #
-#                                                                           #
-#############################################################################
-@timeit
-def imgpil2imgtk(img_pil):
-    return ImageTk.PhotoImage(img_pil)
-
 
 #############################################################################
 #                                                                           #
