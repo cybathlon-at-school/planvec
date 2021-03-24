@@ -1,25 +1,23 @@
 import os
 import subprocess
-from pprint import pprint
 import math
 
-from planvec.common import DATA_DIR_PATH
+from dotmap import DotMap
+
 from planvec.gui.gui_io import DataManager
 from planvec.utils.date_utils import get_date_time_tag
+from config import planvec_config
 from typing import Dict, List
 
-# In cm
-# TODO: Maybe put inside config?
-PDF_WIDTH = 20
-PDF_HEIGHT = 14
-PLATE_WIDTH = 80
-PLATE_HEIGHT = 50
+
 UNITE_FILE_TEMPL = 'unite_plate-{plate_idx}_{date_time_tag}.pdf'
 JAMMED_FILE_TEMPL = 'jammed_plate-{plate_idx}_{date_time_tag}.pdf'
 
 
 class PdfJammer:
-    def __init__(self, data_manager: DataManager, out_dir: str, verbose: bool = True):
+    # TODO: Inject config into PdfJammer!
+    def __init__(self, config: DotMap, data_manager: DataManager, out_dir: str, verbose: bool = True):
+        self.config = config
         self.data_manager = data_manager
         self.out_dir = out_dir
         self.verbose = verbose
@@ -28,7 +26,8 @@ class PdfJammer:
         unite_commands, jam_commands = self.create_commands(pdf_paths)
         for unite_command, jam_command in zip(unite_commands, jam_commands):
             subprocess.call(unite_command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            subprocess.call(' '.join(jam_command), shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)  # pdfjam seems to work only with shell call
+            subprocess.call(' '.join(jam_command), shell=True, stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL)  # pdfjam seems to work only with shell call
         print('Done.')
 
     def create_commands(self, pdfs) -> (List[List[str]], List[List[str]]):
@@ -73,7 +72,8 @@ class PdfJammer:
         assert n_rows <= n_max_rows, f'n_rows ({n_rows}) cannot be larger than n_max_rows ({n_max_rows}).'
         width = n_cols * PDF_WIDTH
         height = n_rows * PDF_HEIGHT
-        command = ['pdfjam'] + [f'--nup {n_cols}x{n_rows}'] + [united_file_path] + [f"--papersize \'{{{width}cm, {height}cm}}\'"]
+        command = ['pdfjam'] + [f'--nup {n_cols}x{n_rows}'] + [united_file_path] + [
+            f"--papersize \'{{{width}cm, {height}cm}}\'"]
         command += [f'--outfile {out_file_path}']
         return command
 
@@ -93,7 +93,6 @@ class PdfJammer:
         for team, pdf_list in teams_pdfs.items():
             teams_pdfs_paths[team] = [os.path.join(self.data_manager.out_dir_path, team, f) for f in pdf_list]
         return teams_pdfs_paths
-
 
     @staticmethod
     def teams_pdfs_paths_to_list(teams_pdfs_paths):
@@ -163,6 +162,7 @@ def calc_n_cols_rows(n_pdfs):
     n_cols = n_pdfs if n_pdfs < n_max_cols else n_max_cols
     n_rows = math.ceil(n_pdfs / n_cols)
     return n_cols, n_rows
+
 
 def calc_final_width_height(n_cols, n_rows):
     width = n_cols * PDF_WIDTH

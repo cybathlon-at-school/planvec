@@ -20,6 +20,7 @@ from PyQt5.QtGui import QImage
 
 from planvec.utils.timing import timeit
 
+
 #############################################################################
 #                                                                           #
 # Input: Matplotlib Figure                                                  #
@@ -76,17 +77,21 @@ def fig2img(fig):
 def rgb2bgr(rgb_img) -> np.ndarray:
     return cv2.cvtColor(rgb_img, cv2.COLOR_RGB2BGR)
 
+
 @timeit
 def bgr2rgb(bgr_img) -> np.ndarray:
     return cv2.cvtColor(bgr_img, cv2.COLOR_BGR2RGB)
+
 
 @timeit
 def bgr2imgpil(bgr_img) -> ImagePil:
     return ImagePil.fromarray(bgr2rgb(bgr_img))
 
+
 @timeit
 def rgb2imgpil(rgb_img) -> ImagePil:
     return ImagePil.fromarray(rgb_img)
+
 
 @timeit
 def np_ndarray2imgpil(np_ndarray) -> ImagePil:
@@ -104,6 +109,7 @@ def bgr2imgtk(bgr_img) -> ImageTk:
     return ImageTk.PhotoImage(image)
 """
 
+
 # ----- Conversions to PyQt QImage format. -----
 @timeit
 def rgb2qt(rgb_img) -> QImage:
@@ -113,9 +119,11 @@ def rgb2qt(rgb_img) -> QImage:
                   bytes_per_line,
                   QImage.Format_RGB888)
 
+
 @timeit
 def bgr2qt(bgr_img):
     return rgb2qt(bgr2rgb(bgr_img))
+
 
 @timeit
 def gray2qt(gray_img):
@@ -160,6 +168,7 @@ def qtimg2pilimg(qimage: QImage) -> ImagePil:
     img_pil = ImagePil.open(bio)
     return img_pil
 
+
 @timeit
 def qtimg2bgr(qt_img):
     qt_img = qt_img.copy()
@@ -168,6 +177,7 @@ def qtimg2bgr(qt_img):
     ptr.setsize(qt_img.byteCount())
     arr = np.array(ptr).reshape(qt_img.height(), qt_img.width(), 4)
     return arr
+
 
 @timeit
 def qtimg2rgb(qt_img):
