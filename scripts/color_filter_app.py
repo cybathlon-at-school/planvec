@@ -1,3 +1,4 @@
+from context import planvec
 from planvec.utils.pythonpath_fix import fix_ros_cv_path
 fix_ros_cv_path()
 import cv2

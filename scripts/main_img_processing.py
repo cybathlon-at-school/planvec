@@ -1,10 +1,12 @@
 import os
 import argparse
+
+from context import planvec
 import planvec.pipeline
 import planvec.io
 import planvec.vizualization
 
-ASSETS_DIR_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'test', 'assets')
+ASSETS_DIR_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../test', 'assets')
 DEFAULT_FILE_PATH = os.path.join(ASSETS_DIR_PATH, 'solid_lines.jpg')
 
 
