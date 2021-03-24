@@ -6,7 +6,7 @@ import skimage
 
 from planvec import img_proc
 from planvec.utils.timing import timeit
-from config import CONFIG
+from config import planvec_config
 
 
 @timeit
@@ -20,7 +20,7 @@ def plot_contours(contours, ax=None, axis='off', reverse_y_axis=True, **kwargs):
         else:
             ax.plot(contour[:, 1], contour[:, 0], '-', linewidth=linewidth)
     # Set correct ratio
-    xlim, ylim = CONFIG.processing.rectify_shape
+    xlim, ylim = planvec_config.processing.rectify_shape
     ax.set_xlim([0, xlim])
     ax.set_ylim([0, ylim])
     if reverse_y_axis:

@@ -7,7 +7,7 @@ from PyQt5 import QtCore, QtGui
 from planvec.gui.gui_io import DataManager
 from planvec.gui.processing import ImgProcessThread
 from planvec.gui.video_stream import FrameBuffer, VideoStreamThread
-from config import CONFIG
+from config import planvec_config
 from dotmap import DotMap
 from typing import Callable
 
@@ -161,7 +161,7 @@ class PlanvecGui(QMainWindow):
                 team_dir_dialog = TeamDirDialog(team_name, self.data_manager)
                 team_dir_dialog.execute()
             if self.data_manager.team_dir_exists(team_name):  # dir created
-                if CONFIG.data.overwrite_output:
+                if planvec_config.data.overwrite_output:
                     self.data_manager.delete_all_team_imgs(team_name)
                 img_idx = self.data_manager.get_next_team_img_idx(team_name)
                 self.data_manager.save_qt_image(team_name, curr_qt_img_in, '_original', idx=img_idx)
