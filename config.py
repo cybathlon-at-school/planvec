@@ -36,6 +36,12 @@ config_dict = {
         'line_width':               1,
         'out_size_inches':          (7.87402, 5.51181),  # TODO: fix scaling
     },
+    'pdf_output': {
+        'plate_width_cm':           80,
+        'plate_height_cm':          50,
+        'draw_area_width_cm':       20,
+        'draw_area_height_cm':      14
+    },
     'data': {
         'overwrite_output':         False
     }
@@ -44,4 +50,5 @@ config_dict = {
 # DotMap: This enables config access like...
 #     from planvec.config import CONFIG
 #     x_blur, y_blur = CONFIG.processing.gaussian_blur
-CONFIG = DotMap(config_dict)
+# TODO: This is not really satisfactory
+planvec_config = DotMap(config_dict)

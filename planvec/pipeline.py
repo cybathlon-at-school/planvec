@@ -7,10 +7,10 @@ from planvec import img_proc
 from planvec import vizualization
 from planvec import conversions
 from planvec.gui.gui_io import save_output_fig
-from config import CONFIG
+from config import planvec_config
 
 DEFAULT_FIG_SIZE = (13, 8)
-COLOR_RANGES = CONFIG.color_range.toDict()  # convert DotMap to Dict
+COLOR_RANGES = planvec_config.color_range.toDict()  # convert DotMap to Dict
 RED_COLOR_RANGES = [color_range for key, color_range in COLOR_RANGES.items() if 'red' in key]
 
 
@@ -22,12 +22,12 @@ def run_pipeline(img, ax, visualize_steps=False, verbose=False, return_np_arr=Tr
         vizualization.imshow(img, figsize=DEFAULT_FIG_SIZE, img_space='BGR', title='Input image')
     # ----- Process image, stretch to dots -----
 
-    img, warped_ok = img_proc.rectify_wrt_red_dots(img, CONFIG.processing.rectify_shape, RED_COLOR_RANGES,
+    img, warped_ok = img_proc.rectify_wrt_red_dots(img, planvec_config.processing.rectify_shape, RED_COLOR_RANGES,
                                                    show_plot=visualize_steps, verbose=verbose)
     if not warped_ok:
         return ax, conversions.bgr2qt(img)
     # ----- Add Gaussian Blur before filtering colors -----
-    img = img_proc.add_gaussian_blur(img, *CONFIG.processing.gaussian_blur)
+    img = img_proc.add_gaussian_blur(img, *planvec_config.processing.gaussian_blur)
 
     # ----- Filter out (make white) color ranges -----
     img = img_proc.filter_multi_hsv_ranges_to_white(img, list(COLOR_RANGES.values()))
@@ -40,7 +40,7 @@ def run_pipeline(img, ax, visualize_steps=False, verbose=False, return_np_arr=Tr
         vizualization.imshow(img, figsize=DEFAULT_FIG_SIZE, img_space='BGR', title='Grey scale')
 
     # ----- Threshold image -----
-    img = img_proc.thresh_img(img, *CONFIG.processing.img_threshold)
+    img = img_proc.thresh_img(img, *planvec_config.processing.img_threshold)
     if visualize_steps:
         vizualization.imshow(img, figsize=DEFAULT_FIG_SIZE, img_space='BGR', title='Grey thresholded')
 
@@ -55,7 +55,7 @@ def run_pipeline(img, ax, visualize_steps=False, verbose=False, return_np_arr=Tr
 
     # ----- Filter regions by size -----
     img_labelled_proc, filtered_regions = img_proc.filter_regions(labelled_img, regionprops=regions,
-                                                                  area_threshold=CONFIG.processing.area_threshold,
+                                                                  area_threshold=planvec_config.processing.area_threshold,
                                                                   verbose=verbose)
     if visualize_steps:
         vizualization.imshow(img_labelled_proc, figsize=DEFAULT_FIG_SIZE, img_space='BGR',
@@ -65,7 +65,7 @@ def run_pipeline(img, ax, visualize_steps=False, verbose=False, return_np_arr=Tr
 
     # ----- Find and filter contours of connected regions -----
     contours = img_proc.find_contours(img_labelled_proc != 0, level=0)
-    contours = img_proc.filter_contours_by_size(contours, n_points_thresh=CONFIG.processing.contours_size_threshold)
+    contours = img_proc.filter_contours_by_size(contours, n_points_thresh=planvec_config.processing.contours_size_threshold)
 
     # ----- Approximate contours by polygons to smooth outline ------
     approx_contours = []
@@ -74,8 +74,8 @@ def run_pipeline(img, ax, visualize_steps=False, verbose=False, return_np_arr=Tr
 
     # ----- Creating the final output figure of the contours ------
     ax = vizualization.plot_contours(approx_contours, ax=ax, color='red',
-                                             linewidth=CONFIG.processing.line_width, axis='off')
-    ax.figure.set_size_inches(*CONFIG.processing.out_size_inches)
+                                     linewidth=planvec_config.processing.line_width, axis='off')
+    ax.figure.set_size_inches(*planvec_config.processing.out_size_inches)
 
     pil_img = conversions.fig2img(ax.figure)
     return ax, ImageQt(pil_img)
