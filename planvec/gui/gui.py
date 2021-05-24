@@ -1,11 +1,13 @@
 from functools import partial
 from PyQt5.QtWidgets import (QMainWindow, QLabel, QPushButton,
                              QHBoxLayout, QVBoxLayout,
-                             QGridLayout, QWidget, QMessageBox, QLineEdit, QShortcut)
+                             QGridLayout, QApplication, QMessageBox, QLineEdit, QShortcut, QWidget)
 from PyQt5 import QtCore, QtGui
 
 from planvec.gui.gui_io import DataManager
 from planvec.gui.processing import ImgProcessThread
+from planvec.gui.ui_generated.RuntimeStyleSheets import WrappedMainWindowWithStyle
+from planvec.gui.ui_generated.planvec_ui import Ui_planvec
 from planvec.gui.video_stream import FrameBuffer, VideoStreamThread
 from config import planvec_config
 from dotmap import DotMap
@@ -17,15 +19,17 @@ class PlanvecGui(QMainWindow):
 
     toggle_canny_signal = QtCore.pyqtSignal()  # signal which toggles the image processing to canny edge detection
 
-    def __init__(self, gui_config: DotMap) -> None:
+    def __init__(self, ui: QWidget, gui_config: DotMap) -> None:
         super().__init__()
-        self.config = gui_config
-        self.main_widget = QWidget()
-        self.video_stream_thread = None
-        self.frame_buffer = FrameBuffer()
-        self.init_ui()
-        self.data_manager = DataManager()
-        self.save_msg_box = None
+        self.ui = ui.ui
+        # self.setCentralWidget(self.ui)
+        # self.config = gui_config
+        # self.main_widget = QWidget()
+        # self.video_stream_thread = None
+        # self.frame_buffer = FrameBuffer()
+        # self.init_ui()
+        # self.data_manager = DataManager()
+        # self.save_msg_box = None
         QShortcut(QtGui.QKeySequence("Ctrl+Q"), self, self.close)
         QShortcut(QtGui.QKeySequence("Esc"), self, self.close)
 

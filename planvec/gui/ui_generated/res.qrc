@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="img">
+    <file>media/grid.png</file>
+    <file>media/mint-pepper-logo.png</file>
+  </qresource>
+</RCC>
