@@ -22,6 +22,9 @@ pyqt5-stubs = "*"
 pypdf2 = "*"
 xlrd = "*"
 opencv-python = "<=4.2"
+qt-material = "*"
+logzero = "*"
+pyqt5-tools = "*"
 
 [requires]
 python_version = "3.8"
