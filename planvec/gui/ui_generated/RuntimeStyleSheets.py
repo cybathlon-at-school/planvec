@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QMainWindow, QApplication
+from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget
 from PyQt5.QtCore import QTimer, QEvent
 from qt_material import apply_stylesheet, QtStyleTools
 
