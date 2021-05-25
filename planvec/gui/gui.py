@@ -14,24 +14,27 @@ from dotmap import DotMap
 from typing import Callable
 
 
-class PlanvecGui(QMainWindow):
+class PlanvecGui:
     """Main class for the PlanvecGui representing the main window and components."""
 
     toggle_canny_signal = QtCore.pyqtSignal()  # signal which toggles the image processing to canny edge detection
 
-    def __init__(self, ui: QWidget, gui_config: DotMap) -> None:
-        super().__init__()
-        self.ui = ui.ui
+    def __init__(self, ui: Ui_planvec, gui_config: DotMap) -> None:
+        self.config = gui_config
+        self.ui = ui
+
+        self.frame_buffer = FrameBuffer()
+        self.video_stream_thread = None
+        video_label, processed_label = self._start_video_stream_label()
+        self.ui.drawingContent = video_label
+
         # self.setCentralWidget(self.ui)
-        # self.config = gui_config
         # self.main_widget = QWidget()
-        # self.video_stream_thread = None
-        # self.frame_buffer = FrameBuffer()
         # self.init_ui()
         # self.data_manager = DataManager()
         # self.save_msg_box = None
-        QShortcut(QtGui.QKeySequence("Ctrl+Q"), self, self.close)
-        QShortcut(QtGui.QKeySequence("Esc"), self, self.close)
+        #QShortcut(QtGui.QKeySequence("Ctrl+Q"), self, self.close)
+        #QShortcut(QtGui.QKeySequence("Esc"), self, self.close)
 
     def init_ui(self):
         # Setup Main window properties
@@ -90,7 +93,7 @@ class PlanvecGui(QMainWindow):
         of the video labels."""
         vid_label, proc_label = QLabel(self), QLabel(self)
         self.video_stream_thread = VideoStreamThread(frame_buffer=self.frame_buffer,
-                                                     parent=self.main_widget,
+                                                     parent=self.ui.drawingContent,
                                                      video_config=self.config.video)
         self.video_stream_thread.start()
         self.proc_stream_thread = ImgProcessThread(frame_buffer=self.frame_buffer,
