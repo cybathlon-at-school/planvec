@@ -36,7 +36,7 @@ def setup_application(argv: List[str]) -> QApplication:
 def main() -> None:
     app = setup_application(sys.argv)
     window = WrappedMainWindowWithStyle(app)
-    gui = PlanvecGui(window.ui, planvec_config)
+    gui = PlanvecGui(window.ui, window, planvec_config)
     window.show()
     sys.exit(app.exec_())
 
