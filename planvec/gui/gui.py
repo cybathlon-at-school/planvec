@@ -6,7 +6,6 @@ from PyQt5 import QtCore, QtGui
 
 from planvec.gui.gui_io import DataManager
 from planvec.gui.processing import ImgProcessThread
-from planvec.gui.ui_generated.RuntimeStyleSheets import WrappedMainWindowWithStyle
 from planvec.gui.ui_generated.planvec_ui import Ui_planvec
 from planvec.gui.video_stream import FrameBuffer, VideoStreamThread
 from config import planvec_config
@@ -15,94 +14,48 @@ from typing import Callable
 
 
 class PlanvecGui:
-    """Main class for the PlanvecGui representing the main window and components."""
+    """Adds logic and behaviour to the ui elements."""
 
     toggle_canny_signal = QtCore.pyqtSignal()  # signal which toggles the image processing to canny edge detection
 
-    def __init__(self, ui: Ui_planvec, gui_config: DotMap) -> None:
+    def __init__(self, ui: Ui_planvec, main_window: QMainWindow, gui_config: DotMap) -> None:
         self.config = gui_config
         self.ui = ui
+        self.main_window = main_window
 
         self.frame_buffer = FrameBuffer()
         self.video_stream_thread = None
+
         video_label, processed_label = self._start_video_stream_label()
-        self.ui.drawingContent = video_label
 
-        # self.setCentralWidget(self.ui)
-        # self.main_widget = QWidget()
-        # self.init_ui()
-        # self.data_manager = DataManager()
-        # self.save_msg_box = None
-        #QShortcut(QtGui.QKeySequence("Ctrl+Q"), self, self.close)
-        #QShortcut(QtGui.QKeySequence("Esc"), self, self.close)
+        video_raw_layout = QGridLayout()
+        video_raw_layout.addWidget(video_label, 0, 0,
+                                   alignment=QtCore.Qt.AlignCenter)
+        video_processed_layout = QGridLayout()
+        video_processed_layout.addWidget(processed_label, 0, 0,
+                                         alignment=QtCore.Qt.AlignCenter)
 
-    def init_ui(self):
-        # Setup Main window properties
-        self.setWindowTitle(self.config.window.title)
-        self.setGeometry(self.config.window.left, self.config.window.top,
-                         self.config.window.width, self.config.window.height)
-        # Status Bar the bottom
-        self.statusBar().showMessage('Press "Esc" or "Ctrl+Q" to exit.')
+        self.ui.drawingContent.setLayout(video_processed_layout)
+        self.ui.openGLWidget.setLayout(video_raw_layout)
 
-        # Main Layout
-        self.setCentralWidget(self.main_widget)
-        self._create_main_layout()
-        self.init_style_sheet()
-        if self.config.window.full_screen:
-            self.showFullScreen()
-        else:
-            self.show()
-
-    def init_style_sheet(self):
-        self.setStyleSheet(
-            """
-            QPushButton {
-                color: #fff !important;
-                text-transform: uppercase;
-                padding: 20px;
-            }
-            """
-        )
-
-    def _create_main_layout(self):
-        """This is the layout for them main widget by adding video and button widgets."""
-        main_layout = QGridLayout()
-        # Set relative stretch values, columns of equal size
-        main_layout.setColumnStretch(0, 1)
-        main_layout.setColumnStretch(1, 1)
-        # Relative stretch s.t. first row (for images) is ten times bottom row (for buttons)
-        main_layout.setRowStretch(0, 10)
-        main_layout.setRowStretch(1, 1)
-
-        # Video widget for input and processed stream
-        video_label, processed_label = self._start_video_stream_label()
-        main_layout.addWidget(video_label, 0, 0,
-                              alignment=QtCore.Qt.AlignCenter)
-
-        main_layout.addWidget(processed_label, 0, 1,
-                              alignment=QtCore.Qt.AlignCenter)
-
-        # Buttons Widget
-        main_layout.addLayout(self._create_btns_layout(), 1, 0, 1, 2,
-                              alignment=QtCore.Qt.AlignCenter | QtCore.Qt.AlignTop)
-        self.main_widget.setLayout(main_layout)
+        self.ui.nameSaveButton.clicked.connect(self.save_img_dialog)
+        self.data_manager = DataManager()
+        self.save_msg_box = None
 
     def _start_video_stream_label(self):
         """Start a video VideoStreamThread, create original video and processed video QLabels and connect
         the VideoStreamThread QImage signal to the self.video_callback function which sets the pix maps
         of the video labels."""
-        vid_label, proc_label = QLabel(self), QLabel(self)
+        vid_label, proc_label = QLabel(self.ui.drawingContent), QLabel(self.ui.openGLWidget)
+
         self.video_stream_thread = VideoStreamThread(frame_buffer=self.frame_buffer,
-                                                     parent=self.ui.drawingContent,
                                                      video_config=self.config.video)
         self.video_stream_thread.start()
-        self.proc_stream_thread = ImgProcessThread(frame_buffer=self.frame_buffer,
-                                                   parent=self.main_widget)
+        self.proc_stream_thread = ImgProcessThread(frame_buffer=self.frame_buffer)
         self.proc_stream_thread.change_pixmap_signal.connect(
             partial(self.video_callback, vid_label, proc_label)
         )
         self.proc_stream_thread.start()
-        self.proc_stream_thread.frame_rate_signal.connect(self._status_msg_callback)
         print('Video stream started.')
         return vid_label, proc_label
 
@@ -112,31 +65,15 @@ class PlanvecGui:
         in_pixmap = QtGui.QPixmap.fromImage(orig_image)
         out_pixmap = QtGui.QPixmap.fromImage(final_image)
 
-        # TODO: Choose aspect ratio of drawing area to match the initial input aspect to have equal size output
-        in_pixmap = in_pixmap.scaled(self.config.video.display_width, self.config.video.display_height,
+        in_pixmap = in_pixmap.scaled(self.config.video.raw_display_width,
+                                     self.config.video.raw_display_height,
                                      QtCore.Qt.KeepAspectRatio)
-        out_pixmap = out_pixmap.scaled(self.config.video.display_width, self.config.video.display_height,
+        out_pixmap = out_pixmap.scaled(self.config.video.processed_display_width,
+                                       self.config.video.processed_display_height,
                                        QtCore.Qt.KeepAspectRatio)
 
         video_label.setPixmap(in_pixmap)
         proc_label.setPixmap(out_pixmap)
-
-    def _status_msg_callback(self, status_msg: str) -> None:
-        # exit_msg = 'Press "Esc" or "Ctrl+Q" to exit.'
-        self.statusBar().showMessage(f'{status_msg}')
-
-    def _create_btns_layout(self) -> QHBoxLayout:
-        """This is a box with holding various buttons."""
-        btns_layout = QHBoxLayout()
-        save_btn = QPushButton("Save!")
-        save_btn.setStyleSheet("background-color: #5DADE2")
-        save_btn.clicked.connect(self.save_img_dialog)
-        dummy_btn = QPushButton("Toggle Canny!")
-        dummy_btn.setStyleSheet("background-color: #E67E22")
-        dummy_btn.clicked.connect(self.proc_stream_thread.toggle_canny_slot)
-        btns_layout.addWidget(save_btn)
-        btns_layout.addWidget(dummy_btn)
-        return btns_layout
 
     def _create_pixmap_label(self, file_path: str, width: int = None) -> QLabel:
         label = QLabel(self)

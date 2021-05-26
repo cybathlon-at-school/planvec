@@ -1,5 +1,7 @@
-from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget
+from PyQt5.QtGui import QKeySequence
+from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QShortcut
 from PyQt5.QtCore import QTimer, QEvent
+from PyQt5 import QtGui
 from qt_material import apply_stylesheet, QtStyleTools
 
 from planvec.gui.ui_generated.planvec_ui import Ui_planvec
@@ -25,25 +27,19 @@ class WrappedMainWindowWithStyle(QMainWindow, QtStyleTools):
 
         QTimer.singleShot(0, self.ui.settingsAdvanced.hide)  # hide the advanced setting module
 
-        # TODO: Sind dies mouse tracking sachen wichtig?
-        # self.main.setMouseTracking(1)
         self.ui.advancedOpenButton.setMouseTracking(1)
         self.ui.advancedCloseButton.setMouseTracking(1)
-        # self.setMouseTracking(1)
+
+        self.quitShortcut = QShortcut(QKeySequence('Ctrl+Q'), self)
+        self.quitShortcut.activated.connect(QApplication.instance().quit)
 
     def eventFilter(self, source, event):
         if event.type() == QEvent.MouseButtonPress:
             if source == self.ui.advancedOpenButton:
-                # print("Open Advanced")
                 self.ui.settingsAdvanced.show()
                 self.ui.settingsAdvanced.setGeometry(10, 296, 261, 449)
 
             if source == self.ui.advancedCloseButton:
-                # print("Close Advanced")
                 self.ui.settingsAdvanced.hide()
-
-            # if source == self.main:
-            #     print("Clicked elsewhere")
-            #     self.main.settingsAdvanced.hide()
 
         return QMainWindow.eventFilter(self, source, event)
