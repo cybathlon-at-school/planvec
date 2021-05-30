@@ -32,6 +32,13 @@ class PlanvecGui:
         self.data_manager = DataManager()
         self.save_msg_box = None
 
+        self.ui.singleSlider1.setRange(0, 3)
+        self.ui.singleSlider1.valueChanged.connect(self.set_some_value)
+
+    def set_some_value(self, value):
+        """Just as an example for future adaptations."""
+        self.config.processing.line_width = value
+
     def _start_video_stream_label(self):
         """Start a video VideoStreamThread, create original video and processed video QLabels and connect
         the VideoStreamThread QImage signal to the self.video_callback function which sets the pix maps
