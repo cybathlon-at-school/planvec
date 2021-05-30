@@ -1,12 +1,9 @@
 import skimage
-import matplotlib.pyplot as plt
 from PIL.ImageQt import ImageQt
-import numpy as np
 
 from planvec import img_proc
 from planvec import vizualization
 from planvec import conversions
-from planvec.gui.gui_io import save_output_fig
 from config import planvec_config
 
 DEFAULT_FIG_SIZE = (13, 8)

@@ -4,7 +4,7 @@ import math
 
 from dotmap import DotMap
 
-from planvec.gui.gui_io import DataManager
+from planvec.gui.datamanager import DataManager
 from planvec.utils.date_utils import get_date_time_tag
 from config import planvec_config
 from typing import Dict, List

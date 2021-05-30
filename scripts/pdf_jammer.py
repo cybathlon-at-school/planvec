@@ -11,7 +11,7 @@ import os
 import argparse
 
 from context import planvec
-from planvec.gui.gui_io import DataManager
+from planvec.gui.datamanager import DataManager
 from planvec.pdf import PdfJammer
 from planvec.common import DATA_DIR_PATH
 
