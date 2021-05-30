@@ -75,7 +75,7 @@ class ImgProcessThread(QtCore.QThread):
         return ax, qt_img_processed
 
     def run(self) -> None:
-        frame_rate_counter = FrameRateCounter(buffer_size=5)
+        frame_rate_counter = FrameRateCounter(buffer_size=1)
         while True:
             bgr_frame = self.frame_buffer.get()
             self.out_ax, self.curr_qt_img_out = self.process_frame(bgr_frame, do_canny=self.do_canny, ax=self.out_ax)

@@ -9,7 +9,7 @@ from qt_material import apply_stylesheet
 from typing import List
 
 import planvec
-from planvec.gui.gui import PlanvecGui
+from planvec.gui.planvec_gui import PlanvecGui
 from planvec.gui.ui_generated.RuntimeStyleSheets import WrappedMainWindowWithStyle
 from planvec.common import UI_GENERATED_PATH
 from config import planvec_config

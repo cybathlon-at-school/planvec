@@ -1,16 +1,16 @@
 from functools import partial
-from PyQt5.QtWidgets import (QMainWindow, QLabel, QPushButton,
-                             QHBoxLayout, QVBoxLayout,
-                             QGridLayout, QApplication, QMessageBox, QLineEdit, QShortcut, QWidget)
+from PyQt5.QtWidgets import (QMainWindow, QLabel, QGridLayout, QMessageBox)
 from PyQt5 import QtCore, QtGui
 
-from planvec.gui.gui_io import DataManager
+from planvec.gui.datamanager import DataManager
+from planvec.gui.invalid_school_team_msg_box import InvalidSchoolTeamMsgBox
 from planvec.gui.processing import ImgProcessThread
+from planvec.gui.save_msg_box import SaveMsgBox
+from planvec.gui.team_dir_dialog import TeamDirDialog
 from planvec.gui.ui_generated.planvec_ui import Ui_planvec
 from planvec.gui.video_stream import FrameBuffer, VideoStreamThread
 from config import planvec_config
 from dotmap import DotMap
-from typing import Callable
 
 
 class PlanvecGui:
@@ -24,19 +24,9 @@ class PlanvecGui:
         self.main_window = main_window
 
         self.frame_buffer = FrameBuffer()
-        self.video_stream_thread = None
 
         video_label, processed_label = self._start_video_stream_label()
-
-        video_raw_layout = QGridLayout()
-        video_raw_layout.addWidget(video_label, 0, 0,
-                                   alignment=QtCore.Qt.AlignCenter)
-        video_processed_layout = QGridLayout()
-        video_processed_layout.addWidget(processed_label, 0, 0,
-                                         alignment=QtCore.Qt.AlignCenter)
-
-        self.ui.drawingContent.setLayout(video_processed_layout)
-        self.ui.openGLWidget.setLayout(video_raw_layout)
+        self._register_video_to_widgets(video_label, processed_label)
 
         self.ui.nameSaveButton.clicked.connect(self.save_img_dialog)
         self.data_manager = DataManager()
@@ -59,12 +49,22 @@ class PlanvecGui:
         print('Video stream started.')
         return vid_label, proc_label
 
+    def _register_video_to_widgets(self, video_label: QLabel, processed_label: QLabel) -> None:
+        video_raw_layout = QGridLayout()
+        video_raw_layout.addWidget(video_label, 0, 0,
+                                   alignment=QtCore.Qt.AlignCenter)
+        video_processed_layout = QGridLayout()
+        video_processed_layout.addWidget(processed_label, 0, 0,
+                                         alignment=QtCore.Qt.AlignCenter)
+
+        self.ui.drawingContent.setLayout(video_processed_layout)
+        self.ui.openGLWidget.setLayout(video_raw_layout)
+
     @QtCore.pyqtSlot(QtGui.QImage)
-    def video_callback(self, video_label, proc_label, orig_image, final_image):
+    def video_callback(self, video_raw_label, video_out_label, orig_image, final_image):
         # Resizing for display
         in_pixmap = QtGui.QPixmap.fromImage(orig_image)
         out_pixmap = QtGui.QPixmap.fromImage(final_image)
-
         in_pixmap = in_pixmap.scaled(self.config.video.raw_display_width,
                                      self.config.video.raw_display_height,
                                      QtCore.Qt.KeepAspectRatio)
@@ -72,23 +72,23 @@ class PlanvecGui:
                                        self.config.video.processed_display_height,
                                        QtCore.Qt.KeepAspectRatio)
 
-        video_label.setPixmap(in_pixmap)
-        proc_label.setPixmap(out_pixmap)
-
-    def _create_pixmap_label(self, file_path: str, width: int = None) -> QLabel:
-        label = QLabel(self)
-        pixmap = QtGui.QPixmap(file_path)
-        if width:
-            pixmap = pixmap.scaledToWidth(width)
-        label.setPixmap(pixmap)
-        return label
+        video_raw_label.setPixmap(in_pixmap)
+        video_out_label.setPixmap(out_pixmap)
 
     def save_img_dialog(self):
         """A QMessageBox pops up asking further details from the user."""
         self.video_stream_thread.toggle_stopped()
-        self.save_msg_box = SaveMsgBox(save_slot=self.save_img_btn,
-                                       data_manager=self.data_manager)
-        self.save_msg_box.execute()
+        school_name: str = self.ui.schoolName.text()
+        team_name: str = self.ui.teamName.text()
+        if not SaveMsgBox.validate_school_name(school_name) or not SaveMsgBox.validate_team_name(team_name):
+            error_box = InvalidSchoolTeamMsgBox(self.data_manager, school_name, team_name)
+            error_box.execute()
+        else:
+            self.save_msg_box = SaveMsgBox(save_slot=self.save_img_btn,
+                                           school_name=school_name,
+                                           team_name=team_name,
+                                           data_manager=self.data_manager)
+            self.save_msg_box.execute()
         self.video_stream_thread.toggle_stopped()
 
     def save_img_btn(self, button_return):
@@ -100,7 +100,7 @@ class PlanvecGui:
         curr_qt_img_in = self.proc_stream_thread.get_curr_in()
         curr_out_fig = self.proc_stream_thread.get_curr_out_fig()
         if button_return.text() == '&OK':
-            team_name = self.save_msg_box.get_team_name()
+            team_name = self.save_msg_box.team_name
             if not self.data_manager.team_dir_exists(team_name):
                 team_dir_dialog = TeamDirDialog(team_name, self.data_manager)
                 team_dir_dialog.execute()
@@ -118,66 +118,3 @@ class PlanvecGui:
             pass
         else:
             raise ValueError('Cannot handle this button return.')
-
-
-class SaveMsgBox(QMessageBox):
-    def __init__(self, save_slot: Callable, data_manager: DataManager, parent=None) -> None:
-        super(SaveMsgBox, self).__init__(parent)
-        self.save_slot = save_slot
-        self.data_manager = data_manager
-        self.line_edit = None
-        self.setup()
-
-    def setup(self):
-        self.setIcon(QMessageBox.Question)
-        self.setText("Bild wirklich speichern?")
-        self.setInformativeText("Hier kommt Bild Infos rein...")
-        self.setWindowTitle("Bild speichern")
-        question_label = QLabel("Gruppennamen eingeben:")
-        team_names = self.data_manager.load_all_team_names()
-        team_names_str = 'Folgende Gruppen existieren bereits:'
-        if len(team_names) == 0:
-            team_names_str = 'Es existieren noch keine Gruppen.'
-        for team in team_names:
-            # n_images = len(self.data_manager.load_team_img_names(team))
-            team_names_str += f'\n    {team}'
-        info_label = QLabel(team_names_str)
-        self.line_edit = QLineEdit()
-        team_layout = QVBoxLayout()
-        team_layout.addWidget(question_label)
-        team_layout.addWidget(self.line_edit)
-        team_layout.addWidget(info_label)
-
-        self.layout().addLayout(team_layout, 3, 0, 1, 3,
-                                QtCore.Qt.AlignCenter | QtCore.Qt.AlignTop)
-        self.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-        self.buttonClicked.connect(self.save_slot)
-
-    def get_team_name(self):
-        return self.line_edit.text()
-
-    def execute(self):
-        self.exec_()
-
-
-class TeamDirDialog(QMessageBox):
-    def __init__(self, team_name: str, data_manager: DataManager, parent=None) -> None:
-        super(TeamDirDialog, self).__init__(parent)
-        self.team_name = team_name
-        self.data_manager = data_manager
-        self.setup()
-
-    def setup(self):
-        text = 'Die Gruppe {} existiert noch nicht. ' \
-               'Neuen Ordner anlegen?'.format(self.team_name)
-        self.setIcon(QMessageBox.Question)
-        self.setText(text)
-        self.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-        self.buttonClicked.connect(self.ok_btn_slot)
-
-    def execute(self):
-        self.exec_()
-
-    def ok_btn_slot(self, button_return):
-        if button_return.text() == '&OK':
-            self.data_manager.create_team_folder(self.team_name)
