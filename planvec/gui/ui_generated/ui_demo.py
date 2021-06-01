@@ -1,13 +1,10 @@
-import sys
 import os
 # PyQt5
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import QTimer, Qt, QCoreApplication, QEvent
+from PyQt5.QtCore import QTimer, QEvent
 from PyQt5 import uic
-from PyQt5.QtGui import QIcon, QPixmap, QCursor
 
 from qt_material import apply_stylesheet, QtStyleTools
-import res_rc  # initializes qt resources
 
 # Extra stylesheets
 extra = {
