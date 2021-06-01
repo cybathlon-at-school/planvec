@@ -13,6 +13,7 @@ from planvec.gui.planvec_gui import PlanvecGui
 from planvec.gui.RuntimeStyleSheets import WrappedMainWindowWithStyle
 from planvec.common import PROJECT_ROOT_PATH
 from config import planvec_config
+from planvec.utils.path_utils import resource_path
 
 
 def setup_application(argv: List[str]) -> QApplication:
