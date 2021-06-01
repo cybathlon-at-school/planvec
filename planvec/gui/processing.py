@@ -38,7 +38,7 @@ class ImgProcessThread(QtCore.QThread):
         super().__init__(parent=parent)
         self.frame_buffer = frame_buffer
         self.out_fig, self.out_ax = vizualization.setup_figure()
-        self.do_canny = True
+        self.do_canny = False
         self.curr_qt_img_input = None
         self.curr_qt_img_out = None
 

@@ -1,0 +1,82 @@
+QFrame {{
+  border-radius: 1px;
+}}
+
+QGroupBox {{
+  background-color: #FFFFFF;
+  border-radius: 2px;
+  padding: 15px;
+  padding-top: 30px;
+  line-height: 13px;
+  text-transform: uppercase;
+}}
+
+QPlainTextEdit {{
+  border-radius: 1px;
+}}
+
+QDateTimeEdit,
+QSpinBox,
+QDoubleSpinBox,
+QTextEdit,
+QLineEdit,
+QPushButton {{
+  color: {{primaryColor}};
+  background-color: {QTMATERIAL_SECONDARYLIGHTCOLOR};
+  border: 1px solid {QTMATERIAL_PRIMARYTEXTCOLOR};
+  border-radius: 2px;
+  padding: 4px 8px ;
+  height: 10px;
+}}
+
+
+QLineEdit {{
+
+}}
+
+QPushButton {{
+  /* color: {QTMATERIAL_SECONDARYCOLOR};
+  text-transform: none;
+  background-color: {QTMATERIAL_PRIMARYCOLOR}; */
+  border-width: 2px;
+  border-radius: 1px;
+  padding: 4px 8px;
+  height: 12px;
+}}
+
+QSlider::groove:horizontal {{
+  height: 4px;
+  background: #FEC1C1;
+  margin: 0 10px;
+}}
+
+QSlider::handle:horizontal {{
+  width: 16px;
+  height: 16px;
+  margin: -13px -10px;
+}}
+
+
+.app-title {{
+  font-size: 30px;
+}}
+
+.info-box {{
+  /* background-color: #FFFFFF; */
+  border: none;
+}}
+
+.info-box-input {{
+  background-color: #FFFFFF;
+  border: none;
+}}
+
+.settings-box {{
+  background-color: #FFFFFF;
+  border: none;
+}}
+
+.settings-box-advanced {{
+  background-color: #FEC1C1;
+  border: none;
+}}

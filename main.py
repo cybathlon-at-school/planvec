@@ -7,11 +7,11 @@ import sys
 from PyQt5.QtWidgets import QApplication
 from qt_material import apply_stylesheet
 from typing import List
+from pathlib import Path
 
-import planvec
 from planvec.gui.planvec_gui import PlanvecGui
-from planvec.gui.ui_generated.RuntimeStyleSheets import WrappedMainWindowWithStyle
-from planvec.common import UI_GENERATED_PATH
+from planvec.gui.RuntimeStyleSheets import WrappedMainWindowWithStyle
+from planvec.common import PROJECT_ROOT_PATH
 from config import planvec_config
 
 
@@ -26,9 +26,9 @@ def setup_application(argv: List[str]) -> QApplication:
         # Font
         'font_family': 'Roboto',
     }
-    apply_stylesheet(app, theme=str(UI_GENERATED_PATH / 'planvec-theme.xml'), extra=extra)
+    apply_stylesheet(app, theme=str(resource_path(Path('assets/planvec-theme.xml'))), extra=extra)
     stylesheet = app.styleSheet()
-    with open(UI_GENERATED_PATH / 'custom.css') as file:
+    with open(resource_path(Path('assets/custom.css'))) as file:
         app.setStyleSheet(stylesheet + file.read().format(**os.environ))
     return app
 

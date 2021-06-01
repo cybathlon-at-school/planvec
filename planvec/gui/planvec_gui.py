@@ -1,5 +1,7 @@
 from functools import partial
-from PyQt5.QtWidgets import (QMainWindow, QLabel, QGridLayout, QMessageBox)
+from PyQt5.QtWidgets import (QMainWindow, QLabel, QPushButton,
+                             QHBoxLayout, QVBoxLayout,
+                             QGridLayout, QApplication, QMessageBox, QLineEdit, QShortcut, QWidget)
 from PyQt5 import QtCore, QtGui
 
 from planvec.gui.datamanager import DataManager
@@ -24,6 +26,7 @@ class PlanvecGui:
         self.main_window = main_window
 
         self.frame_buffer = FrameBuffer()
+        self.video_stream_thread = None
 
         video_label, processed_label = self._start_video_stream_label()
         self._register_video_to_widgets(video_label, processed_label)
@@ -31,13 +34,6 @@ class PlanvecGui:
         self.ui.nameSaveButton.clicked.connect(self.save_img_dialog)
         self.data_manager = DataManager()
         self.save_msg_box = None
-
-        self.ui.singleSlider1.setRange(0, 3)
-        self.ui.singleSlider1.valueChanged.connect(self.set_some_value)
-
-    def set_some_value(self, value):
-        """Just as an example for future adaptations."""
-        self.config.processing.line_width = value
 
     def _start_video_stream_label(self):
         """Start a video VideoStreamThread, create original video and processed video QLabels and connect
@@ -56,22 +52,12 @@ class PlanvecGui:
         print('Video stream started.')
         return vid_label, proc_label
 
-    def _register_video_to_widgets(self, video_label: QLabel, processed_label: QLabel) -> None:
-        video_raw_layout = QGridLayout()
-        video_raw_layout.addWidget(video_label, 0, 0,
-                                   alignment=QtCore.Qt.AlignCenter)
-        video_processed_layout = QGridLayout()
-        video_processed_layout.addWidget(processed_label, 0, 0,
-                                         alignment=QtCore.Qt.AlignCenter)
-
-        self.ui.drawingContent.setLayout(video_processed_layout)
-        self.ui.openGLWidget.setLayout(video_raw_layout)
-
     @QtCore.pyqtSlot(QtGui.QImage)
     def video_callback(self, video_raw_label, video_out_label, orig_image, final_image):
         # Resizing for display
         in_pixmap = QtGui.QPixmap.fromImage(orig_image)
         out_pixmap = QtGui.QPixmap.fromImage(final_image)
+
         in_pixmap = in_pixmap.scaled(self.config.video.raw_display_width,
                                      self.config.video.raw_display_height,
                                      QtCore.Qt.KeepAspectRatio)
@@ -107,7 +93,7 @@ class PlanvecGui:
         curr_qt_img_in = self.proc_stream_thread.get_curr_in()
         curr_out_fig = self.proc_stream_thread.get_curr_out_fig()
         if button_return.text() == '&OK':
-            team_name = self.save_msg_box.team_name
+            team_name = self.save_msg_box.team_name()
             if not self.data_manager.team_dir_exists(team_name):
                 team_dir_dialog = TeamDirDialog(team_name, self.data_manager)
                 team_dir_dialog.execute()

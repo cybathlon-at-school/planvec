@@ -1,8 +1,7 @@
 from PyQt5.QtGui import QKeySequence
-from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QShortcut
+from PyQt5.QtWidgets import QMainWindow, QApplication, QShortcut
 from PyQt5.QtCore import QTimer, QEvent
-from PyQt5 import QtGui
-from qt_material import apply_stylesheet, QtStyleTools
+from qt_material import QtStyleTools
 
 from planvec.gui.ui_generated.planvec_ui import Ui_planvec
 
