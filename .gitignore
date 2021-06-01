@@ -116,3 +116,6 @@ venv.bak/
 
 # output
 data/
+
+# auto-py-to-exe output
+output/
