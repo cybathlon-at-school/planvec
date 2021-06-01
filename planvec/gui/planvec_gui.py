@@ -13,6 +13,7 @@ from planvec.gui.ui_generated.planvec_ui import Ui_planvec
 from planvec.gui.video_stream import FrameBuffer, VideoStreamThread
 from config import planvec_config
 from dotmap import DotMap
+from typing import Callable
 
 
 class PlanvecGui:
@@ -33,7 +34,6 @@ class PlanvecGui:
 
         self.ui.nameSaveButton.clicked.connect(self.save_img_dialog)
         self.data_manager = DataManager()
-        self.save_msg_box = None
 
     def _start_video_stream_label(self):
         """Start a video VideoStreamThread, create original video and processed video QLabels and connect
@@ -93,7 +93,7 @@ class PlanvecGui:
         curr_qt_img_in = self.proc_stream_thread.get_curr_in()
         curr_out_fig = self.proc_stream_thread.get_curr_out_fig()
         if button_return.text() == '&OK':
-            team_name = self.save_msg_box.team_name()
+            team_name = self.ui.teamName.text()
             if not self.data_manager.team_dir_exists(team_name):
                 team_dir_dialog = TeamDirDialog(team_name, self.data_manager)
                 team_dir_dialog.execute()
