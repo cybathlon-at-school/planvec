@@ -145,6 +145,7 @@ def qtimg2pilimg(qimage: QImage) -> ImagePil:
     img_pil = ImagePil.open(bio)
     return img_pil
 
+
 @timeit
 def qtimg2bgr(qt_img):
     qt_img = qt_img.copy()
@@ -153,6 +154,7 @@ def qtimg2bgr(qt_img):
     ptr.setsize(qt_img.byteCount())
     arr = np.array(ptr).reshape(qt_img.height(), qt_img.width(), 4)
     return arr
+
 
 @timeit
 def qtimg2rgb(qt_img):
