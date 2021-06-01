@@ -30,7 +30,15 @@ class PlanvecGui:
         self.video_stream_thread = None
 
         video_label, processed_label = self._start_video_stream_label()
-        self._register_video_to_widgets(video_label, processed_label)
+        video_raw_layout = QGridLayout()
+        video_raw_layout.addWidget(video_label, 0, 0,
+                                   alignment=QtCore.Qt.AlignCenter)
+        video_processed_layout = QGridLayout()
+        video_processed_layout.addWidget(processed_label, 0, 0,
+                                         alignment=QtCore.Qt.AlignCenter)
+
+        self.ui.drawingContent.setLayout(video_processed_layout)
+        self.ui.openGLWidget.setLayout(video_raw_layout)
 
         self.ui.nameSaveButton.clicked.connect(self.save_img_dialog)
         self.data_manager = DataManager()

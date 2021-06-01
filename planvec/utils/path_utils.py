@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-from main import PROJECT_ROOT_PATH
+from planvec.common import PROJECT_ROOT_PATH
 
 
 def resource_path(relative_path: Path) -> Path:
