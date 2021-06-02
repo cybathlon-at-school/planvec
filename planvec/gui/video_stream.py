@@ -26,13 +26,18 @@ class VideoStreamThread(QtCore.QThread):
         self.stopped = False
 
     def run(self) -> None:
-        print(self.video_config.camera)
-        capture = cv2.VideoCapture(CAM_MAP[self.video_config.camera])
+        # print(self.video_config.camera)
+        print("Video config is overwritten hardcoded.")
+        # TODO: Undo this ugly hack.
+        #capture = cv2.VideoCapture(CAM_MAP[self.video_config.camera])
+        capture = cv2.VideoCapture(-1)
+        """
         if not capture.isOpened():
             capture = cv2.VideoCapture(abs(1 - CAM_MAP[self.video_config.camera]))
             warnings.warn(f'Needed to switch camera choice!')
             if not capture.isOpened():
                 raise RuntimeError(f'Couldn\'t connect to camera! Tried all of {list(CAM_MAP.keys())}')
+        """
         capture.set(cv2.CAP_PROP_FRAME_WIDTH, self.video_config.max_input_width)
         capture.set(cv2.CAP_PROP_FRAME_HEIGHT, self.video_config.max_input_height)
         while True:

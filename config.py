@@ -12,7 +12,7 @@ config_dict = {
         'height':                   700  # if not full screen
     },
     'video': {
-        'camera':                   'BUILTIN',  # either 'USB' or 'BUILTIN'
+        'camera':                   'USB',  # either 'USB' or 'BUILTIN'
         'max_input_width':          640,   # high res: 1920, low res: 640
         'max_input_height':         480,   # high res: 1080, low res: 480
         'raw_display_width':        250,
