@@ -43,6 +43,8 @@ class PlanvecGui:
         self.ui.nameSaveButton.clicked.connect(self.save_img_dialog)
         self.data_manager = DataManager()
 
+        self.ui.comboBox.currentTextChanged.connect(self._change_video_stream_capture_device)
+
     def _start_video_stream_label(self):
         """Start a video VideoStreamThread, create original video and processed video QLabels and connect
         the VideoStreamThread QImage signal to the self.video_callback function which sets the pix maps
@@ -59,6 +61,9 @@ class PlanvecGui:
         self.proc_stream_thread.start()
         print('Video stream started.')
         return vid_label, proc_label
+
+    def _change_video_stream_capture_device(self, camera_type: str) -> None:
+        self.video_stream_thread.set_capture_device(camera_type)
 
     @QtCore.pyqtSlot(QtGui.QImage)
     def video_callback(self, video_raw_label, video_out_label, orig_image, final_image):
