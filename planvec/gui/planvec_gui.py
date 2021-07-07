@@ -42,6 +42,8 @@ class PlanvecGui:
 
         self.ui.nameSaveButton.clicked.connect(self.save_img_dialog)
         self.data_manager = DataManager()
+        self.overwrite_output = False
+        self.ui.outputWriteRadio.clicked.connect(self._toggle_overwrite_output)
 
         self.ui.captureDeviceName.currentTextChanged.connect(self._change_video_stream_capture_device)
         self.ui.cannyToggleButton.clicked.connect(self._toggle_canny_processing)
@@ -69,7 +71,11 @@ class PlanvecGui:
     def _toggle_canny_processing(self) -> None:
         self.proc_stream_thread.toggle_canny_slot()
 
+    def _toggle_overwrite_output(self) -> None:
+        self.overwrite_output = not self.overwrite_output
+
     def _parse_input_size(self, input_size_string: str) -> Tuple[int, int]:
+        # TODO: Implement!
         pass
 
     @QtCore.pyqtSlot(QtGui.QImage)
@@ -118,7 +124,7 @@ class PlanvecGui:
                 team_dir_dialog = TeamDirDialog(team_name, self.data_manager)
                 team_dir_dialog.execute()
             if self.data_manager.team_dir_exists(team_name):  # dir created
-                if planvec_config.data.overwrite_output:
+                if self.overwrite_output:
                     self.data_manager.delete_all_team_imgs(team_name)
                 img_idx = self.data_manager.get_next_team_img_idx(team_name)
                 self.data_manager.save_qt_image(team_name, curr_qt_img_in, '_original', idx=img_idx)
