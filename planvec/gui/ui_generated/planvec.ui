@@ -820,7 +820,7 @@ background-color: #fff;</string>
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
          </property>
         </widget>
-        <widget class="QComboBox" name="comboBox">
+        <widget class="QComboBox" name="captureDeviceName">
          <property name="geometry">
           <rect>
            <x>0</x>
@@ -1956,7 +1956,7 @@ padding-left: 10;</string>
           <bool>true</bool>
          </property>
         </widget>
-        <widget class="QRadioButton" name="radioButton">
+        <widget class="QRadioButton" name="cannyToggleButton">
          <property name="geometry">
           <rect>
            <x>0</x>
@@ -1966,7 +1966,7 @@ padding-left: 10;</string>
           </rect>
          </property>
          <property name="text">
-          <string>RadioButton</string>
+          <string>Canny Edges</string>
          </property>
          <property name="checked">
           <bool>false</bool>
@@ -2170,7 +2170,7 @@ background-color: #ecf2fd</string>
       <rect>
        <x>0</x>
        <y>0</y>
-       <width>261</width>
+       <width>274</width>
        <height>411</height>
       </rect>
      </property>

@@ -13,7 +13,7 @@ from planvec.gui.ui_generated.planvec_ui import Ui_planvec
 from planvec.gui.video_stream import FrameBuffer, VideoStreamThread
 from config import planvec_config
 from dotmap import DotMap
-from typing import Callable
+from typing import Callable, Tuple
 
 
 class PlanvecGui:
@@ -43,7 +43,8 @@ class PlanvecGui:
         self.ui.nameSaveButton.clicked.connect(self.save_img_dialog)
         self.data_manager = DataManager()
 
-        self.ui.comboBox.currentTextChanged.connect(self._change_video_stream_capture_device)
+        self.ui.captureDeviceName.currentTextChanged.connect(self._change_video_stream_capture_device)
+        self.ui.cannyToggleButton.clicked.connect(self._toggle_canny_processing)
 
     def _start_video_stream_label(self):
         """Start a video VideoStreamThread, create original video and processed video QLabels and connect
@@ -64,6 +65,12 @@ class PlanvecGui:
 
     def _change_video_stream_capture_device(self, camera_type: str) -> None:
         self.video_stream_thread.set_capture_device(camera_type)
+
+    def _toggle_canny_processing(self) -> None:
+        self.proc_stream_thread.toggle_canny_slot()
+
+    def _parse_input_size(self, input_size_string: str) -> Tuple[int, int]:
+        pass
 
     @QtCore.pyqtSlot(QtGui.QImage)
     def video_callback(self, video_raw_label, video_out_label, orig_image, final_image):

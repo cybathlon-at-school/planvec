@@ -6,7 +6,7 @@ import numpy as np
 from PyQt5 import QtCore
 
 
-CAM_MAP = {'USB': 2, 'BUILTIN': 0}
+CAM_MAP = {'BUILTIN': 0}
 
 
 class FrameBuffer(queue.Queue):
@@ -27,14 +27,8 @@ class VideoStreamThread(QtCore.QThread):
         self.capture_device = None
 
     def run(self) -> None:
-        self.capture_device = cv2.VideoCapture(CAM_MAP[self.video_config.camera])
-        """ TODO: fix this logic
-        if not self.capture_device.isOpened():
-            self.capture_device = cv2.VideoCapture(abs(1 - CAM_MAP[self.video_config.camera]))
-            warnings.warn(f'Needed to switch camera choice!')
-            if not self.capture_device.isOpened():
-                raise RuntimeError(f'Couldn\'t connect to camera! Tried all of {list(CAM_MAP.keys())}')
-        """
+        self.set_capture_device(self.video_config.camera)
+
         self.capture_device.set(cv2.CAP_PROP_FRAME_WIDTH, self.video_config.max_input_width)
         self.capture_device.set(cv2.CAP_PROP_FRAME_HEIGHT, self.video_config.max_input_height)
         while True:
@@ -44,11 +38,26 @@ class VideoStreamThread(QtCore.QThread):
                     bgr_frame = np.fliplr(bgr_frame)  # slow but for builtin cam
                     self.frame_buffer.put(bgr_frame)
 
-    def set_capture_device(self, camera_type: str):
-        if camera_type not in CAM_MAP.keys():
-            print(f'Given camera type {camera_type} not available.')
-            return
-        self.capture_device = cv2.VideoCapture(CAM_MAP[camera_type])
+    def set_capture_device(self, camera_type: str) -> None:
+        if camera_type == 'BUILTIN':
+            capture_idx = CAM_MAP[camera_type]
+        elif camera_type == 'USB':
+            # loop through all possibilities until we find one working
+            usb_cam_indices = []
+            for cam_idx in range(1, 5):
+                cap = cv2.VideoCapture(cam_idx)
+                if cap.read()[0]:
+                    usb_cam_indices.append(cam_idx)
+                cap.release()
+
+            if not len(usb_cam_indices) == 0:
+                capture_idx = usb_cam_indices[0]  # simply take first one
+            else:
+                capture_idx = CAM_MAP['BUILTIN']  # fallback to builtin
+        else:
+            raise ValueError(f'Given camera type {camera_type} not available.')
+
+        self.capture_device = cv2.VideoCapture(capture_idx)
 
     def toggle_stopped(self):
         self.stopped = not self.stopped

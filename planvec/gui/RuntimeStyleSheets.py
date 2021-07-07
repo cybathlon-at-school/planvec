@@ -21,6 +21,7 @@ class WrappedMainWindowWithStyle(QMainWindow, QtStyleTools):
         self.ui.settingsBox.setProperty('class', 'settings-box')
         self.ui.settingsAdvanced.setProperty('class', 'settings-box')
         self.ui.infoBoxInput.setProperty('class', 'info-box-input')
+        self.ui.infoBoxOutput.setProperty('class', 'info-box-input')
 
         q_app.installEventFilter(self)
 
