@@ -48,6 +48,11 @@ class PlanvecGui:
         self.ui.captureDeviceName.currentTextChanged.connect(self._change_video_stream_capture_device)
         self.ui.cannyToggleButton.clicked.connect(self._toggle_canny_processing)
 
+        self.ui.inputSizeWidth.returnPressed.connect(self._input_size_width_callback)
+        self.ui.inputSizeHeight.returnPressed.connect(self._input_size_height_callback)
+        self.ui.outputSizeWidth.returnPressed.connect(self._output_size_width_callback)
+        self.ui.outputSizeHeight.returnPressed.connect(self._output_size_height_callback)
+
     def _start_video_stream_label(self):
         """Start a video VideoStreamThread, create original video and processed video QLabels and connect
         the VideoStreamThread QImage signal to the self.video_callback function which sets the pix maps
@@ -75,8 +80,19 @@ class PlanvecGui:
         self.overwrite_output = not self.overwrite_output
 
     def _parse_input_size(self, input_size_string: str) -> Tuple[int, int]:
-        # TODO: Implement!
         pass
+
+    def _input_size_width_callback(self) -> None:
+        print(self.ui.inputSizeWidth.text())
+
+    def _input_size_height_callback(self) -> None:
+        print(self.ui.inputSizeHeight.text())
+
+    def _output_size_width_callback(self) -> None:
+        print(self.ui.outputSizeWidth.text())
+
+    def _output_size_height_callback(self) -> None:
+        print(self.ui.outputSizeHeight.text())
 
     @QtCore.pyqtSlot(QtGui.QImage)
     def video_callback(self, video_raw_label, video_out_label, orig_image, final_image):

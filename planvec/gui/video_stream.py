@@ -29,8 +29,6 @@ class VideoStreamThread(QtCore.QThread):
     def run(self) -> None:
         self.set_capture_device(self.video_config.camera)
 
-        self.capture_device.set(cv2.CAP_PROP_FRAME_WIDTH, self.video_config.max_input_width)
-        self.capture_device.set(cv2.CAP_PROP_FRAME_HEIGHT, self.video_config.max_input_height)
         while True:
             if not self.stopped:
                 ret, bgr_frame = self.capture_device.read()  # frame is BGR since OpenCV format
@@ -58,6 +56,9 @@ class VideoStreamThread(QtCore.QThread):
             raise ValueError(f'Given camera type {camera_type} not available.')
 
         self.capture_device = cv2.VideoCapture(capture_idx)
+
+        self.capture_device.set(cv2.CAP_PROP_FRAME_WIDTH, self.video_config.max_input_width)
+        self.capture_device.set(cv2.CAP_PROP_FRAME_HEIGHT, self.video_config.max_input_height)
 
     def toggle_stopped(self):
         self.stopped = not self.stopped
