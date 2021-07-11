@@ -53,8 +53,8 @@ class DataManager:
         file_path = self._create_save_img_path(team_name, 'pdf', suffix, idx)
         save_output_fig(fig, file_path)
 
-    def load_team_img_names(self, team_name: str, endswith: str) -> List[str]:
-        """Load all the img file names of a team."""
+    def load_team_output_file_names(self, team_name: str, endswith: str) -> List[str]:
+        """Load all the output file names of a team, e.g. .jpeg or .pdf files."""
         if self.team_dir_exists(team_name):
             all_files = os.listdir(os.path.join(self.out_dir_path, team_name))
             return [f for f in all_files if f.endswith(endswith)]
@@ -62,7 +62,7 @@ class DataManager:
             return []
 
     def get_next_team_img_idx(self, team_name: str) -> int:
-        team_img_names = self.load_team_img_names(team_name, endswith='jpeg')
+        team_img_names = self.load_team_output_file_names(team_name, endswith='jpeg')
         img_indices = sorted([int(name.split('_')[0]) for name in team_img_names])
         if len(img_indices) == 0:
             return 0
@@ -73,11 +73,12 @@ class DataManager:
         return [item for item in items
                 if os.path.isdir(os.path.join(self.out_dir_path, item))]
 
-    def delete_all_team_imgs(self, team_name: str):
+    def delete_all_team_images_and_pdfs(self, team_name: str):
         """Caution: This method deletes all output images stored for a team."""
-        team_img_names = self.load_team_img_names(team_name, endswith='jpeg')
-        for img in team_img_names:
-            os.remove(os.path.join(os.path.join(self.out_dir_path, team_name, img)))
+        team_img_names = self.load_team_output_file_names(team_name, endswith='jpeg')
+        team_pdf_names = self.load_team_output_file_names(team_name, endswith='pdf')
+        for file_name in team_img_names + team_pdf_names:
+            os.remove(os.path.join(os.path.join(self.out_dir_path, team_name, file_name)))
 
 
 def save_output_fig(out_fig, path=os.path.join(DATA_DIR_PATH, 'default_out_name.pdf')):

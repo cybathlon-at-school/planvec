@@ -13,8 +13,8 @@ config_dict = {
     },
     'video': {
         'camera':                   'USB',  # either 'USB' or 'BUILTIN'
-        'max_input_width':          640,   # high res: 1920, low res: 640
-        'max_input_height':         480,   # high res: 1080, low res: 480
+        'max_input_width':          1920,   # high res: 1920, low res: 640
+        'max_input_height':         1080,   # high res: 1080, low res: 480
         'raw_display_width':        250,
         'raw_display_height':       181,
         'processed_display_width':  650,
@@ -28,7 +28,6 @@ config_dict = {
         'green':                    HSVColorRange([15,  20,  30],  [60,  225, 225]),
     },
     'processing': {
-        'img_hw_ratio':             0.7,  # This is the ratio of the w/h of drawing area
         'rectify_shape':            (1920, int(1920 * 0.7)),
         'gaussian_blur':            (3, 3),
         'img_threshold':            (100, 255),

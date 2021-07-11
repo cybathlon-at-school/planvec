@@ -50,8 +50,8 @@ class PlanvecGui:
 
         self.ui.inputSizeWidth.returnPressed.connect(self._input_size_width_callback)
         self.ui.inputSizeHeight.returnPressed.connect(self._input_size_height_callback)
-        self.ui.outputSizeWidth.returnPressed.connect(self._output_size_width_callback)
-        self.ui.outputSizeHeight.returnPressed.connect(self._output_size_height_callback)
+        self.ui.outputSizeWidth.returnPressed.connect(self._output_plate_size_width_callback)
+        self.ui.outputSizeHeight.returnPressed.connect(self._output_plate_size_height_callback)
 
     def _start_video_stream_label(self):
         """Start a video VideoStreamThread, create original video and processed video QLabels and connect
@@ -62,7 +62,9 @@ class PlanvecGui:
         self.video_stream_thread = VideoStreamThread(frame_buffer=self.frame_buffer,
                                                      video_config=self.config.video)
         self.video_stream_thread.start()
-        self.proc_stream_thread = ImgProcessThread(frame_buffer=self.frame_buffer)
+        self.proc_stream_thread = ImgProcessThread(frame_buffer=self.frame_buffer,
+                                                   processing_config=self.config.processing,
+                                                   color_ranges=self.config.color_range.toDict())
         self.proc_stream_thread.change_pixmap_signal.connect(
             partial(self.video_callback, vid_label, proc_label)
         )
@@ -83,15 +85,15 @@ class PlanvecGui:
         pass
 
     def _input_size_width_callback(self) -> None:
-        print(self.ui.inputSizeWidth.text())
+        self.proc_stream_thread.set_input_width(int(self.ui.inputSizeWidth.text()))
 
     def _input_size_height_callback(self) -> None:
-        print(self.ui.inputSizeHeight.text())
+        self.proc_stream_thread.set_input_height(int(self.ui.inputSizeHeight.text()))
 
-    def _output_size_width_callback(self) -> None:
+    def _output_plate_size_width_callback(self) -> None:
         print(self.ui.outputSizeWidth.text())
 
-    def _output_size_height_callback(self) -> None:
+    def _output_plate_size_height_callback(self) -> None:
         print(self.ui.outputSizeHeight.text())
 
     @QtCore.pyqtSlot(QtGui.QImage)
@@ -141,7 +143,7 @@ class PlanvecGui:
                 team_dir_dialog.execute()
             if self.data_manager.team_dir_exists(team_name):  # dir created
                 if self.overwrite_output:
-                    self.data_manager.delete_all_team_imgs(team_name)
+                    self.data_manager.delete_all_team_images_and_pdfs(team_name)
                 img_idx = self.data_manager.get_next_team_img_idx(team_name)
                 self.data_manager.save_qt_image(team_name, curr_qt_img_in, '_original', idx=img_idx)
                 self.data_manager.save_qt_image(team_name, curr_qt_img_out, '_output', idx=img_idx)

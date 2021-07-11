@@ -8,6 +8,8 @@ from PyQt5.QtWidgets import QApplication
 from qt_material import apply_stylesheet
 from typing import List
 from pathlib import Path
+import matplotlib
+matplotlib.use('Agg')
 
 from planvec.gui.planvec_gui import PlanvecGui
 from planvec.gui.RuntimeStyleSheets import WrappedMainWindowWithStyle

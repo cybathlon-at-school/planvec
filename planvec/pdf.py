@@ -82,8 +82,8 @@ class PdfJammer:
         team_names = self.data_manager.load_all_team_names()
         teams_pdfs = {}
         for team in team_names:
-            teams_pdfs[team] = self.data_manager.load_team_img_names(team,
-                                                                     endswith='output.pdf')
+            teams_pdfs[team] = self.data_manager.load_team_output_file_names(team,
+                                                                             endswith='output.pdf')
         return teams_pdfs
 
     def accumulate_pdf_paths(self) -> Dict[str, List[str]]:
