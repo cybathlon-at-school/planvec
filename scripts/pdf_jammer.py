@@ -12,7 +12,7 @@ import argparse
 
 from context import planvec
 from planvec.gui.datamanager import DataManager
-from planvec.pdf import PdfJammer
+from planvec.pdf_jammer import PdfJammer
 from planvec.common import DATA_REPOSITORY_DIR_PATH
 
 

@@ -5,15 +5,18 @@ from PyQt5.QtWidgets import (QMainWindow, QLabel, QPushButton,
 from PyQt5 import QtCore, QtGui
 
 from planvec.gui.datamanager import DataManager
-from planvec.gui.invalid_school_team_msg_box import InvalidSchoolTeamMsgBox
+from planvec.gui.missing_school_or_team_name_msg_box import MissingSchoolOrTeamNameMsgBox
 from planvec.gui.processing import ImgProcessThread
 from planvec.gui.save_msg_box import SaveMsgBox
+from planvec.gui.jam_msg_box import JamMsgBox
+from planvec.gui.error_msg_box import ErrorMsgBox
 from planvec.gui.team_dir_dialog import TeamDirDialog
 from planvec.gui.ui_generated.planvec_ui import Ui_planvec
 from planvec.gui.video_stream import FrameBuffer, VideoStreamThread
-from config import planvec_config
+from planvec.pdf_jammer import PdfJammer
+
 from dotmap import DotMap
-from typing import Callable, Tuple
+from typing import Tuple
 
 
 class PlanvecGui:
@@ -41,6 +44,7 @@ class PlanvecGui:
         self.ui.openGLWidget.setLayout(video_raw_layout)
 
         self.ui.nameSaveButton.clicked.connect(self.save_img_dialog)
+        self.ui.nameSaveButton_2.clicked.connect(self.jam_dialog)  # TODO: rename ui element in qt creator
         self.data_manager = DataManager(output_location=self.config.data.output_location)
         self.overwrite_output = False
         self.ui.outputWriteRadio.clicked.connect(self._toggle_overwrite_output)
@@ -119,7 +123,7 @@ class PlanvecGui:
         school_name: str = self.ui.schoolName.text()
         team_name: str = self.ui.teamName.text()
         if not SaveMsgBox.validate_school_name(school_name) or not SaveMsgBox.validate_team_name(team_name):
-            error_box = InvalidSchoolTeamMsgBox(self.data_manager, school_name, team_name)
+            error_box = MissingSchoolOrTeamNameMsgBox(self.data_manager, school_name, team_name)
             error_box.execute()
         else:
             self.save_msg_box = SaveMsgBox(save_slot=self.save_img_btn,
@@ -154,6 +158,60 @@ class PlanvecGui:
                 save_msg_box = QMessageBox()
                 save_msg_box.setText(f'Bilder gespeichert für Gruppe: {team_name}')
                 save_msg_box.exec_()
+        elif button_return.text() == '&Cancel':
+            pass
+        else:
+            raise ValueError('Cannot handle this button return.')
+
+    def jam_dialog(self) -> None:
+        """A QMessageBox pops up asking further details from the user."""
+        self.video_stream_thread.toggle_stopped()
+        self.proc_stream_thread.toggle_stopped()
+        school_name: str = self.ui.schoolName_2.text()
+        team_name: str = self.ui.teamName_2.text()
+        if not JamMsgBox.validate_school_name(school_name):
+            error_box = ErrorMsgBox(f'Bitte Schulnamen eingeben!')
+            error_box.execute()
+            return
+        if not self.data_manager.school_dir_exists(school_name):
+            error_box = ErrorMsgBox(f'Fehler: Kein Ordner für Schule {school_name} gefunden.')
+            error_box.execute()
+            return
+        if team_name != '':
+            if not self.data_manager.team_dir_exists(school_name, team_name):
+                error_box = ErrorMsgBox(f'Fehler: Kein Team-Ordner {team_name} für Schule {school_name} gefunden.')
+                error_box.execute()
+                return
+
+        self.jam_msg_box = JamMsgBox(jam_slot=self.jam_btn,
+                                     school_name=school_name,
+                                     team_name=None if team_name == '' else team_name,
+                                     data_manager=self.data_manager)
+        self.jam_msg_box.execute()
+        self.video_stream_thread.toggle_stopped()
+        self.proc_stream_thread.toggle_stopped()
+
+    def jam_btn(self, button_return):
+        # TODO: Typing!
+        """This function gets called when the user presses the Create Output or Cancel
+        buttons in the QMessageBox which pops up when the user presses Create Output
+        in the main window."""
+        if button_return.text() == '&OK':
+            school_name = self.ui.schoolName_2.text()
+            team_name = self.ui.teamName_2.text()
+            if team_name == '':  # jam for all teams
+                # TODO: invoke jammer
+                save_msg_box = QMessageBox()
+                # save_msg_box.setText(f'PDF Output generiert für alle Gruppe: ALLE')
+                save_msg_box.setText(f'Funktionalität noch nicht umgesetzt. Coming soon...')
+                save_msg_box.exec_()
+            else:  # jam for specific team
+                # TODO: invoke jammer
+                save_msg_box = QMessageBox()
+                #save_msg_box.setText(f'PDF Output generiert für Gruppe: {team_name}')
+                save_msg_box.setText(f'Funktionalität noch nicht umgesetzt. Coming soon...')
+                save_msg_box.exec_()
+
         elif button_return.text() == '&Cancel':
             pass
         else:

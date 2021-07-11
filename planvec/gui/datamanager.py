@@ -39,6 +39,9 @@ class DataManager:
 
         return os.path.exists(os.path.join(self.out_dir_path, school_name, team_name))
 
+    def school_dir_exists(self, school_name: str) -> bool:
+        return os.path.exists(os.path.join(self.out_dir_path, school_name))
+
     def create_team_folder(self, school_name, team_name: str) -> None:
         if not self.team_dir_exists(school_name, team_name):
             os.makedirs(os.path.join(self.out_dir_path, school_name, team_name))

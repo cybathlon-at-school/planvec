@@ -17,7 +17,6 @@ JAMMED_FILE_TEMPL = 'jammed_plate-{plate_idx}_{date_time_tag}.pdf'
 class PdfJammer:
     # TODO: Inject config into PdfJammer!
     def __init__(self, config: DotMap, data_manager: DataManager, out_dir: str, verbose: bool = True):
-        self.config = config
         self.data_manager = data_manager
         self.out_dir = out_dir
         self.verbose = verbose
