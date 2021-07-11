@@ -46,6 +46,7 @@ class ImgProcessThread(QtCore.QThread):
         self.do_canny = False
         self.curr_qt_img_input = None
         self.curr_qt_img_out = None
+        self.stopped = False
 
     def get_curr_out(self) -> QImage:
         return self.curr_qt_img_out
@@ -55,6 +56,9 @@ class ImgProcessThread(QtCore.QThread):
 
     def get_curr_out_fig(self) -> plt.Figure:
         return self.out_fig
+
+    def toggle_stopped(self):
+        self.stopped = not self.stopped
 
     def set_input_width(self, width) -> None:
         _, current_height_inches = self.processing_config.out_size_inches
@@ -112,14 +116,15 @@ class ImgProcessThread(QtCore.QThread):
     def run(self) -> None:
         frame_rate_counter = FrameRateCounter(buffer_size=1)
         while True:
-            bgr_frame = self.frame_buffer.get()
-            self.out_ax, self.curr_qt_img_out = self.process_frame(bgr_frame,
-                                                                   processing_config=self.processing_config,
-                                                                   color_ranges=self.color_ranges,
-                                                                   do_canny=self.do_canny,
-                                                                   ax=self.out_ax)
-            self.curr_qt_img_input = conversions.bgr2qt(bgr_frame)
-            self.change_pixmap_signal.emit(self.curr_qt_img_input, self.curr_qt_img_out)
-            frame_rate_counter.event_happened()
-            self.frame_rate_signal.emit(f'Frame rate (last {frame_rate_counter.buffer_size} frames): '
-                                        f'{round(frame_rate_counter.get_frame_rate(), 2)}')
+            if not self.stopped:
+                bgr_frame = self.frame_buffer.get()
+                self.out_ax, self.curr_qt_img_out = self.process_frame(bgr_frame,
+                                                                       processing_config=self.processing_config,
+                                                                       color_ranges=self.color_ranges,
+                                                                       do_canny=self.do_canny,
+                                                                       ax=self.out_ax)
+                self.curr_qt_img_input = conversions.bgr2qt(bgr_frame)
+                self.change_pixmap_signal.emit(self.curr_qt_img_input, self.curr_qt_img_out)
+                frame_rate_counter.event_happened()
+                self.frame_rate_signal.emit(f'Frame rate (last {frame_rate_counter.buffer_size} frames): '
+                                            f'{round(frame_rate_counter.get_frame_rate(), 2)}')

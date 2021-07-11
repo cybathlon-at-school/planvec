@@ -1,8 +1,6 @@
 import queue
-import warnings
 
 import cv2
-import numpy as np
 from PyQt5 import QtCore
 
 
@@ -33,7 +31,6 @@ class VideoStreamThread(QtCore.QThread):
             if not self.stopped:
                 ret, bgr_frame = self.capture_device.read()  # frame is BGR since OpenCV format
                 if ret:
-                    bgr_frame = np.fliplr(bgr_frame)  # slow but for builtin cam
                     self.frame_buffer.put(bgr_frame)
 
     def set_capture_device(self, camera_type: str) -> None:

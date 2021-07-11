@@ -115,6 +115,7 @@ class PlanvecGui:
     def save_img_dialog(self):
         """A QMessageBox pops up asking further details from the user."""
         self.video_stream_thread.toggle_stopped()
+        self.proc_stream_thread.toggle_stopped()
         school_name: str = self.ui.schoolName.text()
         team_name: str = self.ui.teamName.text()
         if not SaveMsgBox.validate_school_name(school_name) or not SaveMsgBox.validate_team_name(team_name):
@@ -127,6 +128,7 @@ class PlanvecGui:
                                            data_manager=self.data_manager)
             self.save_msg_box.execute()
         self.video_stream_thread.toggle_stopped()
+        self.proc_stream_thread.toggle_stopped()
 
     def save_img_btn(self, button_return):
         # TODO: Typing!

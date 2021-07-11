@@ -62,7 +62,10 @@ def run_pipeline(img, ax, config: DotMap, color_ranges: dict, visualize_steps=Fa
                                          title='Image regions filtered with boxes')
 
     # ----- Find and filter contours of connected regions -----
-    contours = img_proc.find_contours(img_labelled_proc != 0, level=0)
+    try:
+        contours = img_proc.find_contours(img_labelled_proc != 0, level=0)
+    except KeyError:  # bug in skimage, see https://github.com/scikit-image/scikit-image/issues/4830
+        return ax, conversions.bgr2qt(img)
     contours = img_proc.filter_contours_by_size(contours, n_points_thresh=config.contours_size_threshold)
 
     # ----- Approximate contours by polygons to smooth outline ------
