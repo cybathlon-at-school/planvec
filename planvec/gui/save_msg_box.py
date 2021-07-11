@@ -24,8 +24,8 @@ class SaveMsgBox(QMessageBox):
 
         self.setText("Bild wirklich speichern?")
         self.setInformativeText(f"Schulname: {self.school_name} \nTeamname: {self.team_name}")
-        team_names = self.data_manager.load_all_team_names()
-        team_names_str = 'Folgende Gruppen existieren bereits:'
+        team_names = self.data_manager.load_all_team_names(self.school_name)
+        team_names_str = f'Folgende Gruppen existieren bereits für {self.school_name}:'
         if len(team_names) == 0:
             team_names_str = 'Es existieren noch keine Gruppen.'
         for team in team_names:

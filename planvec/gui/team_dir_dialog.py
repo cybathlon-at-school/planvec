@@ -4,8 +4,9 @@ from planvec.gui.datamanager import DataManager
 
 
 class TeamDirDialog(QMessageBox):
-    def __init__(self, team_name: str, data_manager: DataManager, parent=None) -> None:
+    def __init__(self, school_name: str, team_name: str, data_manager: DataManager, parent=None) -> None:
         super(TeamDirDialog, self).__init__(parent)
+        self.school_name = school_name
         self.team_name = team_name
         self.data_manager = data_manager
         self.setup()
@@ -23,4 +24,4 @@ class TeamDirDialog(QMessageBox):
 
     def ok_btn_slot(self, button_return):
         if button_return.text() == '&OK':
-            self.data_manager.create_team_folder(self.team_name)
+            self.data_manager.create_team_folder(self.school_name, self.team_name)

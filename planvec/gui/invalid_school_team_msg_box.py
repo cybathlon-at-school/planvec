@@ -14,19 +14,8 @@ class InvalidSchoolTeamMsgBox(QMessageBox):
 
     def setup(self):
         self.setIcon(QMessageBox.Critical)
-        self.setText("Bitte nicht-leere Schul- und Teamnamen eingeben!")
+        self.setText("Bitte Schul- und Team-namen eingeben!")
         self.setWindowTitle("Fehler")
-        team_names = self.data_manager.load_all_team_names()
-        team_names_str = 'Folgende Gruppen existieren bereits:'
-        for team in team_names:
-            # n_images = len(self.data_manager.load_team_img_names(team))
-            team_names_str += f'\n    {team}'
-        info_label = QLabel(team_names_str)
-        team_layout = QStackedLayout()
-        team_layout.addWidget(info_label)
-
-        self.layout().addLayout(team_layout, 1, 0, QtCore.Qt.AlignCenter | QtCore.Qt.AlignTop)
-
         self.setStandardButtons(QMessageBox.Ok)
 
     def execute(self):

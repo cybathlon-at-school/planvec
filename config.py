@@ -44,7 +44,8 @@ config_dict = {
         'draw_area_height_cm':      14
     },
     'data': {
-        'overwrite_output':         False
+        'overwrite_output':         False,
+        'output_location':          'desktop'  # can be either 'desktop' or 'repository'
     }
 }
 

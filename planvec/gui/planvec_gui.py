@@ -41,7 +41,7 @@ class PlanvecGui:
         self.ui.openGLWidget.setLayout(video_raw_layout)
 
         self.ui.nameSaveButton.clicked.connect(self.save_img_dialog)
-        self.data_manager = DataManager()
+        self.data_manager = DataManager(output_location=self.config.data.output_location)
         self.overwrite_output = False
         self.ui.outputWriteRadio.clicked.connect(self._toggle_overwrite_output)
 
@@ -140,16 +140,17 @@ class PlanvecGui:
         curr_out_fig = self.proc_stream_thread.get_curr_out_fig()
         if button_return.text() == '&OK':
             team_name = self.ui.teamName.text()
-            if not self.data_manager.team_dir_exists(team_name):
-                team_dir_dialog = TeamDirDialog(team_name, self.data_manager)
+            school_name = self.ui.schoolName.text()
+            if not self.data_manager.team_dir_exists(school_name, team_name):
+                team_dir_dialog = TeamDirDialog(school_name, team_name, self.data_manager)
                 team_dir_dialog.execute()
-            if self.data_manager.team_dir_exists(team_name):  # dir created
+            if self.data_manager.team_dir_exists(school_name, team_name):  # dir created
                 if self.overwrite_output:
-                    self.data_manager.delete_all_team_images_and_pdfs(team_name)
-                img_idx = self.data_manager.get_next_team_img_idx(team_name)
-                self.data_manager.save_qt_image(team_name, curr_qt_img_in, '_original', idx=img_idx)
-                self.data_manager.save_qt_image(team_name, curr_qt_img_out, '_output', idx=img_idx)
-                self.data_manager.save_pdf(team_name, curr_out_fig, '_output', idx=img_idx)
+                    self.data_manager.delete_all_team_images_and_pdfs(school_name, team_name)
+                img_idx = self.data_manager.get_next_team_img_idx(school_name, team_name)
+                self.data_manager.save_qt_image(school_name, team_name, curr_qt_img_in, '_original', idx=img_idx)
+                self.data_manager.save_qt_image(school_name, team_name, curr_qt_img_out, '_output', idx=img_idx)
+                self.data_manager.save_pdf(school_name, team_name, curr_out_fig, '_output', idx=img_idx)
                 save_msg_box = QMessageBox()
                 save_msg_box.setText(f'Bilder gespeichert für Gruppe: {team_name}')
                 save_msg_box.exec_()
