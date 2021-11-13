@@ -1,5 +1,4 @@
 from time import time
-from queue import Queue
 import cv2
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtGui import QImage
@@ -10,7 +9,7 @@ from typing import Tuple
 import planvec.pipeline
 from planvec import vizualization, conversions
 from planvec.gui.video_stream import FrameBuffer
-from planvec.utils.units_conversion import cm_to_inches
+from planvec.utils.units_conversion import cm_to_inches, inches_to_cm
 
 
 class FrameRateCounter:
@@ -59,20 +58,24 @@ class ImgProcessThread(QtCore.QThread):
 
     def toggle_stopped(self):
         self.stopped = not self.stopped
+        print(f"Toggled stop video. Currently: {'STOPPED' if self.stopped else 'RUNNING'}")
 
-    def set_input_width(self, width) -> None:
+    def set_input_width(self, width_cm) -> None:
         _, current_height_inches = self.processing_config.out_size_inches
-        new_width_in_inches = cm_to_inches(width)
-        self.processing_config.out_size_inches = (new_width_in_inches, current_height_inches)
-        self.processing_config.rectify_shape = self._calculate_display_shape_in_pixels(new_width_in_inches,
-                                                                                       current_height_inches)
+        new_width_in_inches = cm_to_inches(width_cm)
+        self._set_out_size_inches((new_width_in_inches, current_height_inches))
 
-    def set_input_height(self, height) -> None:
+    def set_input_height(self, height_cm) -> None:
         current_width_inches, _ = self.processing_config.out_size_inches
-        new_height_in_inches = cm_to_inches(height)
-        self.processing_config.out_size_inches = (current_width_inches, new_height_in_inches)
-        self.processing_config.rectify_shape = self._calculate_display_shape_in_pixels(current_width_inches,
-                                                                                       new_height_in_inches)
+        new_height_in_inches = cm_to_inches(height_cm)
+        self._set_out_size_inches((current_width_inches, new_height_in_inches))
+
+    def _set_out_size_inches(self, new_out_size_inches: tuple) -> None:
+        self.processing_config.out_size_inches = new_out_size_inches
+        self.processing_config.rectify_shape = self._calculate_display_shape_in_pixels(*new_out_size_inches)
+        print(f"New output shape in cm (width,height): "
+              f"{tuple([round(inches_to_cm(entry), 2) for entry in new_out_size_inches])}. "
+              f"{self.processing_config.rectify_shape} pixels.")
 
     @staticmethod
     def _calculate_height_to_width_ratio(height: float, width: float) -> float:
@@ -91,6 +94,7 @@ class ImgProcessThread(QtCore.QThread):
     @QtCore.pyqtSlot()
     def toggle_canny_slot(self) -> None:
         self.do_canny = not self.do_canny
+        print(f"Toggled canny. Currently doing canny? {'YES' if self.do_canny else 'NO'}")
 
     @staticmethod
     def process_frame(img, processing_config: DotMap, color_ranges: dict, do_canny: bool, ax: plt.Axes) -> (plt.Axes, QImage):

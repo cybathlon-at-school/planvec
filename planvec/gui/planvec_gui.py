@@ -85,14 +85,18 @@ class PlanvecGui:
     def _toggle_overwrite_output(self) -> None:
         self.overwrite_output = not self.overwrite_output
 
+    def _toggle_stop_video_and_proc_stream_threads(self):
+        self.video_stream_thread.toggle_stopped()
+        self.proc_stream_thread.toggle_stopped()
+
     def _parse_input_size(self, input_size_string: str) -> Tuple[int, int]:
         pass
 
     def _input_size_width_callback(self) -> None:
-        self.proc_stream_thread.set_input_width(int(self.ui.inputSizeWidth.text()))
+        self.proc_stream_thread.set_input_width(float(self.ui.inputSizeWidth.text()))
 
     def _input_size_height_callback(self) -> None:
-        self.proc_stream_thread.set_input_height(int(self.ui.inputSizeHeight.text()))
+        self.proc_stream_thread.set_input_height(float(self.ui.inputSizeHeight.text()))
 
     def _output_plate_size_width_callback(self) -> None:
         print(self.ui.outputSizeWidth.text())
@@ -118,8 +122,8 @@ class PlanvecGui:
 
     def save_img_dialog(self):
         """A QMessageBox pops up asking further details from the user."""
-        self.video_stream_thread.toggle_stopped()
-        self.proc_stream_thread.toggle_stopped()
+        self._toggle_stop_video_and_proc_stream_threads()
+
         school_name: str = self.ui.schoolName.text()
         team_name: str = self.ui.teamName.text()
         if not SaveMsgBox.validate_school_name(school_name) or not SaveMsgBox.validate_team_name(team_name):
@@ -131,8 +135,8 @@ class PlanvecGui:
                                            team_name=team_name,
                                            data_manager=self.data_manager)
             self.save_msg_box.execute()
-        self.video_stream_thread.toggle_stopped()
-        self.proc_stream_thread.toggle_stopped()
+
+        self._toggle_stop_video_and_proc_stream_threads()
 
     def save_img_btn(self, button_return):
         # TODO: Typing!
@@ -142,6 +146,7 @@ class PlanvecGui:
         curr_qt_img_out = self.proc_stream_thread.get_curr_out()
         curr_qt_img_in = self.proc_stream_thread.get_curr_in()
         curr_out_fig = self.proc_stream_thread.get_curr_out_fig()
+
         if button_return.text() == '&OK':
             team_name = self.ui.teamName.text()
             school_name = self.ui.schoolName.text()
@@ -165,22 +170,25 @@ class PlanvecGui:
 
     def jam_dialog(self) -> None:
         """A QMessageBox pops up asking further details from the user."""
-        self.video_stream_thread.toggle_stopped()
-        self.proc_stream_thread.toggle_stopped()
+        self._toggle_stop_video_and_proc_stream_threads()
+
         school_name: str = self.ui.schoolName_2.text()
         team_name: str = self.ui.teamName_2.text()
         if not JamMsgBox.validate_school_name(school_name):
             error_box = ErrorMsgBox(f'Bitte Schulnamen eingeben!')
             error_box.execute()
+            self._toggle_stop_video_and_proc_stream_threads()
             return
         if not self.data_manager.school_dir_exists(school_name):
             error_box = ErrorMsgBox(f'Fehler: Kein Ordner für Schule {school_name} gefunden.')
             error_box.execute()
+            self._toggle_stop_video_and_proc_stream_threads()
             return
         if team_name != '':
             if not self.data_manager.team_dir_exists(school_name, team_name):
                 error_box = ErrorMsgBox(f'Fehler: Kein Team-Ordner {team_name} für Schule {school_name} gefunden.')
                 error_box.execute()
+                self._toggle_stop_video_and_proc_stream_threads()
                 return
 
         self.jam_msg_box = JamMsgBox(jam_slot=self.jam_btn,
@@ -188,8 +196,8 @@ class PlanvecGui:
                                      team_name=None if team_name == '' else team_name,
                                      data_manager=self.data_manager)
         self.jam_msg_box.execute()
-        self.video_stream_thread.toggle_stopped()
-        self.proc_stream_thread.toggle_stopped()
+
+        self._toggle_stop_video_and_proc_stream_threads()
 
     def jam_btn(self, button_return):
         # TODO: Typing!
@@ -208,7 +216,7 @@ class PlanvecGui:
             else:  # jam for specific team
                 # TODO: invoke jammer
                 save_msg_box = QMessageBox()
-                #save_msg_box.setText(f'PDF Output generiert für Gruppe: {team_name}')
+                # save_msg_box.setText(f'PDF Output generiert für Gruppe: {team_name}')
                 save_msg_box.setText(f'Funktionalität noch nicht umgesetzt. Coming soon...')
                 save_msg_box.exec_()
 

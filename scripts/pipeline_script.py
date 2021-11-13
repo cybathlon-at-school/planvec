@@ -2,7 +2,7 @@ import os
 import matplotlib.pyplot as plt
 
 from context import planvec
-from planvec.common import PROJECT_ROOT_PATH
+from planvec.planvec_paths import PROJECT_ROOT_PATH
 from planvec.pipeline import run_pipeline
 from planvec import vizualization
 

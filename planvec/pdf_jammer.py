@@ -1,6 +1,7 @@
 import os
 import subprocess
 import math
+from pathlib import Path
 
 from dotmap import DotMap
 
@@ -10,18 +11,24 @@ from config import planvec_config
 from typing import Dict, List
 
 
+PLATE_WIDTH = 50
+PLATE_HEIGHT = 80
+PDF_WIDTH = 20
+PDF_HEIGHT = 14
+
 UNITE_FILE_TEMPL = 'unite_plate-{plate_idx}_{date_time_tag}.pdf'
 JAMMED_FILE_TEMPL = 'jammed_plate-{plate_idx}_{date_time_tag}.pdf'
 
 
 class PdfJammer:
     # TODO: Inject config into PdfJammer!
-    def __init__(self, config: DotMap, data_manager: DataManager, out_dir: str, verbose: bool = True):
+    def __init__(self, data_manager: DataManager, out_dir_path: Path, verbose: bool = True):
         self.data_manager = data_manager
-        self.out_dir = out_dir
+        self.out_dir = out_dir_path
         self.verbose = verbose
 
     def run(self, pdf_paths: List[str]) -> None:
+        """Main function to ran PDF jamming. Creates a united and jammed output PDF."""
         unite_commands, jam_commands = self.create_commands(pdf_paths)
         for unite_command, jam_command in zip(unite_commands, jam_commands):
             subprocess.call(unite_command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -76,21 +83,23 @@ class PdfJammer:
         command += [f'--outfile {out_file_path}']
         return command
 
-    def _accumulate_pdf_names(self) -> Dict[str, List[str]]:
+    def _accumulate_pdf_names_per_team(self, school_name: str) -> Dict[str, List[str]]:
         """Accumulates the .pdf output files for each team."""
-        team_names = self.data_manager.load_all_team_names()
+        team_names = self.data_manager.load_all_team_names(school_name)
+
+        # keys: team names, values: lists of output pdf file paths
         teams_pdfs = {}
         for team in team_names:
-            teams_pdfs[team] = self.data_manager.load_team_output_file_names(team,
-                                                                             endswith='output.pdf')
+            teams_pdfs[team] = self.data_manager.load_team_output_file_names(school_name, team, endswith='output.pdf')
         return teams_pdfs
 
     def accumulate_pdf_paths(self) -> Dict[str, List[str]]:
-        """Accumulates the .pdf output file paths for each team."""
-        teams_pdfs = self._accumulate_pdf_names()
-        teams_pdfs_paths = {}
-        for team, pdf_list in teams_pdfs.items():
-            teams_pdfs_paths[team] = [os.path.join(self.data_manager.out_dir_path, team, f) for f in pdf_list]
+        """Accumulates the .pdf output file paths for each school and each team."""
+        # keys: team names, values: lists of pdf file paths
+        teams_pdfs_paths = dict()
+        for school_name in self.data_manager.load_all_school_names():
+            for team, pdf_file_names in self._accumulate_pdf_names_per_team(school_name).items():
+                teams_pdfs_paths[team] = [os.path.join(self.data_manager.out_dir_path, school_name, team, f) for f in pdf_file_names]
         return teams_pdfs_paths
 
     @staticmethod

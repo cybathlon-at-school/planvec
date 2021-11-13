@@ -3,19 +3,21 @@ import queue
 import cv2
 from PyQt5 import QtCore
 
-
 CAM_MAP = {'BUILTIN': 0}
+EXCLUDE_CAPTURE_INDICES = [2]
 
 
 class FrameBuffer(queue.Queue):
     """Queue to hold frames. Gets filled up by a thread grabbing frames from the camera while processing functions
     might dequeue frames from the queue."""
+
     def __init__(self, max_size=1):
         super().__init__(maxsize=max_size)
 
 
 class VideoStreamThread(QtCore.QThread):
     """Grab images from video stream thread and put them into the frame buffer queue."""
+
     def __init__(self, frame_buffer: FrameBuffer, video_config, parent=None):
         super().__init__(parent=parent)
         print(video_config)
@@ -40,6 +42,8 @@ class VideoStreamThread(QtCore.QThread):
             # loop through all possibilities until we find one working
             usb_cam_indices = []
             for cam_idx in range(1, 5):
+                if cam_idx in EXCLUDE_CAPTURE_INDICES:
+                    continue
                 cap = cv2.VideoCapture(cam_idx)
                 if cap.read()[0]:
                     usb_cam_indices.append(cam_idx)
@@ -48,11 +52,13 @@ class VideoStreamThread(QtCore.QThread):
             if not len(usb_cam_indices) == 0:
                 capture_idx = usb_cam_indices[0]  # simply take first one
             else:
-                capture_idx = CAM_MAP['BUILTIN']  # fallback to builtin
+                capture_idx = CAM_MAP['BUILTIN']
+                print(f'Could not start USB camera. Fallback on builtin camera.')
         else:
             raise ValueError(f'Given camera type {camera_type} not available.')
 
         self.capture_device = cv2.VideoCapture(capture_idx)
+        print(f'Choose capture index {capture_idx}')
 
         self.capture_device.set(cv2.CAP_PROP_FRAME_WIDTH, self.video_config.max_input_width)
         self.capture_device.set(cv2.CAP_PROP_FRAME_HEIGHT, self.video_config.max_input_height)

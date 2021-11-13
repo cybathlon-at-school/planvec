@@ -9,11 +9,15 @@ output PDFs, ready for laser cutting.
 """
 import os
 import argparse
+from pathlib import Path
 
 from context import planvec
 from planvec.gui.datamanager import DataManager
 from planvec.pdf_jammer import PdfJammer
-from planvec.common import DATA_REPOSITORY_DIR_PATH
+from planvec.planvec_paths import DATA_DESKTOP_DIR_PATH
+
+
+DEFAULT_OUT_DIR_PAR = Path.home() / 'Desktop'
 
 
 def parse_arguments():
@@ -21,7 +25,7 @@ def parse_arguments():
                                                  'one or more laser-cutting ready pdfs.')
     parser.add_argument('-d', '--date-tag', required=True,
                         help='Specify the date of the session you want to process, e.g. "2019-31-05".')
-    parser.add_argument('-o', '--out-dir', required=False,
+    parser.add_argument('-o', '--out-dir', required=False, type=Path,
                         help='Absolute path - location to store created output pdf\'s. '
                              'Defaults to session folder given by --date-tag field.')
     args = parser.parse_args()
@@ -31,10 +35,9 @@ def parse_arguments():
 def main(parsed_args):
     EQUS = 30 * '='
     print(f'{EQUS} PDF JAMMER {EQUS}\t')
-    data_manager = DataManager(parsed_args.date_tag)
+    data_manager = DataManager(output_location='desktop', date_tag=parsed_args.date_tag)
     pdf_jammer = PdfJammer(data_manager=data_manager,
-                           out_dir=parsed_args.out_dir if parsed_args.out_dir
-                           else os.path.join(DATA_REPOSITORY_DIR_PATH, parsed_args.date_tag))
+                           out_dir_path=parsed_args.out_dir if parsed_args.out_dir else DATA_DESKTOP_DIR_PATH / parsed_args.date_tag)
     pdfs_dict = pdf_jammer.accumulate_pdf_paths()
     pdf_paths_list = pdf_jammer.teams_pdfs_paths_to_list(pdfs_dict)
     pdf_jammer.run(pdf_paths_list)

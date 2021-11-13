@@ -3,14 +3,15 @@ from pathlib import Path
 from PyQt5.QtGui import QImage
 import matplotlib.pyplot as plt
 
-from planvec.common import DATA_REPOSITORY_DIR_PATH
-from planvec.common import DATA_DESKTOP_DIR_PATH
+from planvec.planvec_paths import DATA_REPOSITORY_DIR_PATH
+from planvec.planvec_paths import DATA_DESKTOP_DIR_PATH
 from planvec.utils import date_utils
 
 from typing import List
 
 date_utils.get_date_tag()
 date_utils.get_date_time_tag()
+
 IMG_NAME_FORMAT = '{idx}_{team}_{date_tag}{suffix}.{file_type}'
 
 
@@ -18,7 +19,7 @@ class DataManager:
     def __init__(self, output_location: str, date_tag: str = date_utils.get_date_tag()):
         self.date_tag = date_tag
         self.out_dir_path = str(self.output_root_dir_path_from_output_location(output_location) / date_tag)
-        self.try_create_date_output_folder()
+        self.create_date_output_folder_if_not_exists()
 
     @staticmethod
     def output_root_dir_path_from_output_location(output_location: str) -> Path:
@@ -29,7 +30,7 @@ class DataManager:
         else:
             raise ValueError(f'output_location {output_location} not supported.')
 
-    def try_create_date_output_folder(self) -> None:
+    def create_date_output_folder_if_not_exists(self) -> None:
         if not os.path.exists(self.out_dir_path):
             os.makedirs(self.out_dir_path)
 
@@ -90,6 +91,9 @@ class DataManager:
                     if os.path.isdir(os.path.join(self.out_dir_path, school_name, item))]
         else:
             return []
+
+    def load_all_school_names(self) -> List[str]:
+        return [item for item in os.listdir(self.out_dir_path) if os.path.isdir(os.path.join(self.out_dir_path, item))]
 
     def delete_all_team_images_and_pdfs(self, school_name, team_name: str):
         """Caution: This method deletes all output images stored for a team."""
