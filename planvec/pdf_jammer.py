@@ -31,9 +31,11 @@ class PdfJammer:
         """Main function to ran PDF jamming. Creates a united and jammed output PDF."""
         unite_commands, jam_commands = self.create_commands(pdf_paths)
         for unite_command, jam_command in zip(unite_commands, jam_commands):
-            subprocess.call(unite_command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            subprocess.call(' '.join(jam_command), shell=True, stdout=subprocess.DEVNULL,
-                            stderr=subprocess.DEVNULL)  # pdfjam seems to work only with shell call
+            print(f'Calling unite: {unite_command}')
+            print(f'Calling jam: {jam_command}')
+
+            subprocess.call(unite_command)
+            subprocess.call(' '.join(jam_command), shell=True)  # pdfjam seems to work only with shell call
         print('Done.')
 
     def create_commands(self, pdfs) -> (List[List[str]], List[List[str]]):
@@ -83,24 +85,32 @@ class PdfJammer:
         command += [f'--outfile {out_file_path}']
         return command
 
-    def _accumulate_pdf_names_per_team(self, school_name: str) -> Dict[str, List[str]]:
-        """Accumulates the .pdf output files for each team."""
-        team_names = self.data_manager.load_all_team_names(school_name)
-
-        # keys: team names, values: lists of output pdf file paths
-        teams_pdfs = {}
-        for team in team_names:
-            teams_pdfs[team] = self.data_manager.load_team_output_file_names(school_name, team, endswith='output.pdf')
-        return teams_pdfs
-
-    def accumulate_pdf_paths(self) -> Dict[str, List[str]]:
+    def accumulate_pdf_paths_all_schools_and_teams(self) -> Dict[str, List[str]]:
         """Accumulates the .pdf output file paths for each school and each team."""
         # keys: team names, values: lists of pdf file paths
         teams_pdfs_paths = dict()
         for school_name in self.data_manager.load_all_school_names():
-            for team, pdf_file_names in self._accumulate_pdf_names_per_team(school_name).items():
+            for team, pdf_file_names in self.accumulate_pdf_names_per_team(school_name).items():
                 teams_pdfs_paths[team] = [os.path.join(self.data_manager.out_dir_path, school_name, team, f) for f in pdf_file_names]
         return teams_pdfs_paths
+
+    def accumulate_pdf_names_per_team(self, school_name: str) -> Dict[str, List[str]]:
+        """Accumulates the .pdf output files for each team."""
+        team_names = self.data_manager.load_all_team_names(school_name)
+
+        # keys: team names, values: lists of output pdf file names
+        teams_pdf_names = {}
+        for team in team_names:
+            teams_pdf_names[team] = self.data_manager.load_team_output_file_names(school_name, team, endswith='output.pdf')
+        return teams_pdf_names
+
+    def accumulate_pdf_paths_per_team(self, school_name: str) -> Dict[str, List[str]]:
+        """Convert a team name to list of output pdf file names dict to have list of absolute file paths as dict values."""
+        teams_pdf_names = self.accumulate_pdf_names_per_team(school_name)
+        teams_pdf_paths = {}
+        for team_name, pdf_file_names in teams_pdf_names.items():
+            teams_pdf_paths[team_name] = [os.path.join(self.data_manager.out_dir_path, school_name, team_name, f) for f in pdf_file_names]
+        return teams_pdf_paths
 
     @staticmethod
     def teams_pdfs_paths_to_list(teams_pdfs_paths):
@@ -109,6 +119,11 @@ class PdfJammer:
         for pdfs in teams_pdfs_paths.values():
             pdfs_list += pdfs
         return pdfs_list
+
+    def accumulate_pdf_paths_for(self, school_name: str, team_name: str) -> List[str]:
+        """Creates a list of file paths to pdf output files for a certain school and team."""
+        pdf_file_names = self.data_manager.load_team_output_file_names(school_name, team_name, endswith='output.pdf')
+        return [os.path.join(self.data_manager.out_dir_path, school_name, team_name, f) for f in pdf_file_names]
 
     @staticmethod
     def print_pdf_paths(teams_pdf_dict: Dict[str, List[str]]) -> None:
@@ -123,7 +138,7 @@ class PdfJammer:
         n_plates = calc_n_plates(max_pdfs_per_plate, n_pdfs_total)
         print(f'Collecting output from {self.data_manager.out_dir_path}...')
         print(f'Found {n_pdfs_total} pdf output files.')
-        pdfs_dict = self.accumulate_pdf_paths()
+        pdfs_dict = self.accumulate_pdf_paths_all_schools_and_teams()
         PdfJammer.print_pdf_paths(pdfs_dict)
         print(f'Given dimensions:')
         print(f' Plate width:\t {PLATE_WIDTH}')

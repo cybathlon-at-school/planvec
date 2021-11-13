@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import QMessageBox, QLabel, QLineEdit, QVBoxLayout, QLayout
 
 from planvec.gui.datamanager import DataManager
 from planvec.utils.string_utils import is_empty_string
+from planvec.utils.date_utils import get_date_tag
 
 
 class JamMsgBox(QMessageBox):
@@ -22,7 +23,7 @@ class JamMsgBox(QMessageBox):
         self.setIcon(QMessageBox.Question)
         self.setWindowTitle("PDF output generieren")
 
-        self.setText("Output wirklich generieren?")
+        self.setText(f"Output wirklich generieren (für {get_date_tag()} Ordner)?")
         self.setInformativeText(f"Schulname: {self.school_name}\n"
                                 f"Teamname: {self.team_name if self.team_name else 'ALLE'}")
         self.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)

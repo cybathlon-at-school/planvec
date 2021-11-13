@@ -14,6 +14,8 @@ from planvec.gui.team_dir_dialog import TeamDirDialog
 from planvec.gui.ui_generated.planvec_ui import Ui_planvec
 from planvec.gui.video_stream import FrameBuffer, VideoStreamThread
 from planvec.pdf_jammer import PdfJammer
+from planvec.utils.date_utils import get_date_tag
+from planvec.planvec_paths import DATA_DESKTOP_DIR_PATH
 
 from dotmap import DotMap
 from typing import Tuple
@@ -130,7 +132,7 @@ class PlanvecGui:
             error_box = MissingSchoolOrTeamNameMsgBox(self.data_manager, school_name, team_name)
             error_box.execute()
         else:
-            self.save_msg_box = SaveMsgBox(save_slot=self.save_img_btn,
+            self.save_msg_box = SaveMsgBox(save_slot=self.save_img_action,
                                            school_name=school_name,
                                            team_name=team_name,
                                            data_manager=self.data_manager)
@@ -138,8 +140,7 @@ class PlanvecGui:
 
         self._toggle_stop_video_and_proc_stream_threads()
 
-    def save_img_btn(self, button_return):
-        # TODO: Typing!
+    def save_img_action(self, button_return):
         """This function gets called when the user presses the Save or Cancel
         buttons in the QMessageBox which pops up when the user presses Save
         in the main window."""
@@ -191,7 +192,7 @@ class PlanvecGui:
                 self._toggle_stop_video_and_proc_stream_threads()
                 return
 
-        self.jam_msg_box = JamMsgBox(jam_slot=self.jam_btn,
+        self.jam_msg_box = JamMsgBox(jam_slot=self.jam_slot_action,
                                      school_name=school_name,
                                      team_name=None if team_name == '' else team_name,
                                      data_manager=self.data_manager)
@@ -199,28 +200,37 @@ class PlanvecGui:
 
         self._toggle_stop_video_and_proc_stream_threads()
 
-    def jam_btn(self, button_return):
-        # TODO: Typing!
+    def jam_slot_action(self, button_return):
         """This function gets called when the user presses the Create Output or Cancel
         buttons in the QMessageBox which pops up when the user presses Create Output
         in the main window."""
+        def _execute_successful_jam_info_box(msg: str) -> None:
+            info_msg_box = QMessageBox()
+            info_msg_box.setWindowTitle("Info")
+            info_msg_box.setText(msg)
+            info_msg_box.exec_()
+
         if button_return.text() == '&OK':
+            pdf_jammer = PdfJammer(data_manager=self.data_manager,
+                                   out_dir_path=DATA_DESKTOP_DIR_PATH / get_date_tag())
+
             school_name = self.ui.schoolName_2.text()
             team_name = self.ui.teamName_2.text()
-            if team_name == '':  # jam for all teams
-                # TODO: invoke jammer
-                save_msg_box = QMessageBox()
-                # save_msg_box.setText(f'PDF Output generiert für alle Gruppe: ALLE')
-                save_msg_box.setText(f'Funktionalität noch nicht umgesetzt. Coming soon...')
-                save_msg_box.exec_()
-            else:  # jam for specific team
-                # TODO: invoke jammer
-                save_msg_box = QMessageBox()
-                # save_msg_box.setText(f'PDF Output generiert für Gruppe: {team_name}')
-                save_msg_box.setText(f'Funktionalität noch nicht umgesetzt. Coming soon...')
-                save_msg_box.exec_()
+            if team_name == '':  # jam for all teams of a specific school
+                pdfs_dict = pdf_jammer.accumulate_pdf_names_per_team(school_name)
+                pdf_paths_list = pdf_jammer.teams_pdfs_paths_to_list(pdfs_dict)
+                pdf_jammer.run(pdf_paths_list)
+                _execute_successful_jam_info_box(f'PDF Output erfolgreich generiert für alle Gruppen von Schule {school_name}: \n\t {pdf_jammer.out_dir}')
+
+            else:  # jam for specific school and team
+                pdf_paths_list = pdf_jammer.accumulate_pdf_paths_for(school_name, team_name)
+                pdf_jammer.run(pdf_paths_list)
+
+                _execute_successful_jam_info_box(f'PDF Output erfolgreich generiert für Team {team_name} von Schule {school_name}: \n\t {pdf_jammer.out_dir}')
 
         elif button_return.text() == '&Cancel':
             pass
         else:
             raise ValueError('Cannot handle this button return.')
+
+
