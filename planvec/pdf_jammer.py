@@ -11,6 +11,7 @@ from config import planvec_config
 from typing import Dict, List
 
 
+# todo: need not hardcode but use values from GUI for this
 PLATE_WIDTH = 50
 PLATE_HEIGHT = 80
 PDF_WIDTH = 20
@@ -21,7 +22,6 @@ JAMMED_FILE_TEMPL = 'jammed_plate-{plate_idx}_{date_time_tag}.pdf'
 
 
 class PdfJammer:
-    # TODO: Inject config into PdfJammer!
     def __init__(self, data_manager: DataManager, out_dir_path: Path, verbose: bool = True):
         self.data_manager = data_manager
         self.out_dir = out_dir_path
