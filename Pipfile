@@ -27,6 +27,7 @@ qt-material = "*"
 logzero = "*"
 pyqt5-tools = "*"
 auto-py-to-exe = "*"
+jupyterlab = "*"
 
 [requires]
 python_version = "3.8.6"
