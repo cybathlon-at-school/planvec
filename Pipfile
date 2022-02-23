@@ -25,7 +25,6 @@ xlrd = "*"
 opencv-python = "<=4.2"
 qt-material = "*"
 logzero = "*"
-pyqt5-tools = "*"
 auto-py-to-exe = "*"
 jupyterlab = "*"
 
