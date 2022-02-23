@@ -33,7 +33,7 @@ cd <path/to/planvec/>
 pipenv shell
 ```
 #### qt_main_gui.py
-```python main_gui.py```   
+```python main.py```   
 This will run the main GUI to convert drawings to pdfs via vision.
 
 #### pdf_jammer.py
