@@ -12,7 +12,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1285</width>
+    <width>1289</width>
     <height>840</height>
    </rect>
   </property>
@@ -130,7 +130,7 @@ background-color: #FEC1C1;</string>
       <enum>Qt::PlainText</enum>
      </property>
      <property name="pixmap">
-      <pixmap>:/img/media/mint-pepper-logo.png</pixmap>
+      <pixmap resource="../planvec/gui/ui_generated/res.qrc">:/img/media/mint-pepper-logo.png</pixmap>
      </property>
      <property name="scaledContents">
       <bool>true</bool>
@@ -983,22 +983,18 @@ padding-left: 10;</string>
            <height>40</height>
           </size>
          </property>
+         <property name="editable">
+          <bool>true</bool>
+         </property>
          <property name="currentText">
-          <string>USB</string>
+          <string/>
          </property>
          <property name="maxVisibleItems">
           <number>5</number>
          </property>
-         <item>
-          <property name="text">
-           <string>USB</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>STANDARD</string>
-          </property>
-         </item>
+         <property name="minimumContentsLength">
+          <number>0</number>
+         </property>
         </widget>
        </widget>
       </item>
@@ -1936,7 +1932,7 @@ padding-left: 10;</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1285</width>
+     <width>1289</width>
      <height>22</height>
     </rect>
    </property>
@@ -1944,7 +1940,7 @@ padding-left: 10;</string>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources>
-  <include location="res.qrc"/>
+  <include location="../planvec/gui/ui_generated/res.qrc"/>
  </resources>
  <connections/>
 </ui>

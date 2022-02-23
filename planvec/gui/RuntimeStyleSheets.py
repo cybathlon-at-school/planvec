@@ -1,7 +1,9 @@
+from PyQt5 import QtCore
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import QMainWindow, QApplication, QShortcut
 from PyQt5.QtCore import QTimer, QEvent
 from qt_material import QtStyleTools
+from cv2 import cv2
 
 from planvec.gui.ui_generated.planvec_ui import Ui_planvec
 
@@ -19,16 +21,16 @@ class WrappedMainWindowWithStyle(QMainWindow, QtStyleTools):
         self.ui.logo.setProperty('class', 'logo')
         self.ui.infoBox.setProperty('class', 'info-box')
         self.ui.settingsBox.setProperty('class', 'settings-box')
-        #self.ui.settingsAdvanced.setProperty('class', 'settings-box')
+        # self.ui.settingsAdvanced.setProperty('class', 'settings-box')
         self.ui.infoBoxInput.setProperty('class', 'info-box-input')
         self.ui.infoBoxOutput.setProperty('class', 'info-box-input')
 
         q_app.installEventFilter(self)
 
-        #QTimer.singleShot(0, self.ui.settingsAdvanced.hide)  # hide the advanced setting module
+        # QTimer.singleShot(0, self.ui.settingsAdvanced.hide)  # hide the advanced setting module
 
-        #self.ui.advancedOpenButton.setMouseTracking(1)
-        #self.ui.advancedCloseButton.setMouseTracking(1)
+        # self.ui.advancedOpenButton.setMouseTracking(1)
+        # self.ui.advancedCloseButton.setMouseTracking(1)
 
         self.quitShortcut = QShortcut(QKeySequence('Ctrl+Q'), self)
         self.quitShortcut.activated.connect(QApplication.instance().quit)

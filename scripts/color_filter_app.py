@@ -6,7 +6,7 @@ import sys
 import numpy as np
 
 
-CAMERA = 1  # 0 for laptop cam, 1 for USB cam
+CAMERA = 4  # device index
 useCamera = False
 
 # Check if filename is passed
@@ -21,7 +21,6 @@ cv2.namedWindow('image')
 # create trackbars for color change
 def nothing(x):
     pass
-
 
 # Note: Hue is from 0-179 for Opencv
 cv2.createTrackbar('HMin', 'image', 0, 179, nothing)

@@ -15,6 +15,7 @@ from planvec.gui.ui_generated.planvec_ui import Ui_planvec
 from planvec.gui.video_stream import FrameBuffer, VideoStreamThread
 from planvec.pdf_jammer import PdfJammer
 from planvec.utils.date_utils import get_date_tag
+from planvec.utils.camera_utils import get_physical_camera_device_indices
 from planvec.planvec_paths import DATA_DESKTOP_DIR_PATH
 
 from dotmap import DotMap
@@ -34,6 +35,9 @@ class PlanvecGui:
         self.frame_buffer = FrameBuffer()
         self.video_stream_thread = None
 
+        self.camera_map = {}  # number (1, 2, 3, ...) to camera index (physical index used by opencv)
+        self.selected_camera_human_readable_index = None
+        self._setup_camera_map_and_ui_camera_selection()
         video_label, processed_label = self._start_video_stream_label()
         video_raw_layout = QGridLayout()
         video_raw_layout.addWidget(video_label, 0, 0,
@@ -66,7 +70,8 @@ class PlanvecGui:
         vid_label, proc_label = QLabel(self.ui.drawingContent), QLabel(self.ui.openGLWidget)
 
         self.video_stream_thread = VideoStreamThread(frame_buffer=self.frame_buffer,
-                                                     video_config=self.config.video)
+                                                     video_config=self.config.video,
+                                                     camera_map=self.camera_map)
         self.video_stream_thread.start()
         self.proc_stream_thread = ImgProcessThread(frame_buffer=self.frame_buffer,
                                                    processing_config=self.config.processing,
@@ -78,8 +83,13 @@ class PlanvecGui:
         print('Video stream started.')
         return vid_label, proc_label
 
-    def _change_video_stream_capture_device(self, camera_type: str) -> None:
-        self.video_stream_thread.set_capture_device(camera_type)
+    def _change_video_stream_capture_device(self, camera_label: str) -> None:
+        def extract_human_readable_camera_index_from_camera_type(_camera_label: str) -> int:
+            return int(_camera_label.split(" ")[1])
+
+        camera_device_index = self.camera_map[extract_human_readable_camera_index_from_camera_type(camera_label)]
+        print(f"Switching to {camera_label} which has device index {camera_device_index}")
+        self.video_stream_thread.set_capture_device(camera_device_index)
 
     def _toggle_canny_processing(self) -> None:
         self.proc_stream_thread.toggle_canny_slot()
@@ -105,6 +115,18 @@ class PlanvecGui:
 
     def _output_plate_size_height_callback(self) -> None:
         print(self.ui.outputSizeHeight.text())
+
+    def _setup_camera_map_and_ui_camera_selection(self) -> None:
+        for idx in range(self.ui.captureDeviceName.count()):
+            self.ui.captureDeviceName.removeItem(idx)
+
+        for human_readable_camera_index, camera_idx in enumerate(get_physical_camera_device_indices(), start=1):
+            self.camera_map[human_readable_camera_index] = camera_idx
+            self.ui.captureDeviceName.addItem(f"Kamera {human_readable_camera_index}")
+
+        print(self.camera_map)
+        self.selected_camera_human_readable_index = 1
+        self.ui.captureDeviceName.setCurrentText(f"Kamera 1")
 
     @QtCore.pyqtSlot(QtGui.QImage)
     def video_callback(self, video_raw_label, video_out_label, orig_image, final_image):
