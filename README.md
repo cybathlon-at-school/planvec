@@ -2,6 +2,19 @@
 Vectorizes a captured image of a drawn construction plan component.
 
 ## Installation
+Tested on Ubuntu 20.04.
+
+### For End-Users
+1) Install **pdfunite** (contained in poppler-utils)  
+    ```sudo apt install poppler-utils```
+2) Install **pdfjam** (contained in texlive-extra-utils) - takes a few minutes  
+    ```sudo apt-get install texlive-extra-utils ```
+3) Download the executable `main` from the latest production release and run it via  
+    ```./main``` (at the location of the file)
+4) TODO: Add instructions on adding a Desktop entry to start the application with a double-click
+
+
+### For Development
 0) Make sure git is installed. If not (e.g. on a new machine): ```sudo apt install git```.  
 0) Install zlib ```sudo apt-get install zlib1g-dev```.  
 0) Install pip ```sudo apt install python-pip```.  
@@ -25,44 +38,24 @@ Vectorizes a captured image of a drawn construction plan component.
 6) Install **pdfjam** (contained in texlive-extra-utils) - takes a few minutes  
     ```sudo apt-get install texlive-extra-utils ```
 
-## How to use?
+## How to use (for development)
 ### Python scripts
 Before using those make sure you have the pipenv shell activated, i.e.  
 ```
 cd <path/to/planvec/>
 pipenv shell
 ```
-#### qt_main_gui.py
+#### main.py
 ```python main.py```   
 This will run the main GUI to convert drawings to pdfs via vision.
 
-#### pdf_jammer.py
-```python pdf_jammer.py <date-tag>```  
-Utility to arrange the output from all teams into one or more pdf's ready for laser cutting. The <date-tag> 
-is in the format yyyy-mm-dd, e.g. 2019-11-05, and is used to select the output folder to gather 
-pdf files from.  
-```python pdf_jammer.py --help``` yields...  
-```
-    usage: pdf_jammer.py [-h] -d DATE_TAG [-o OUT_DIR]
-    
-    Arrange the single pdf outputs of a planvec session into one or more laser-
-    cutting ready pdfs.
-    
-    optional arguments:
-      -h, --help            show this help message and exit
-      -d DATE_TAG, --date-tag DATE_TAG
-                            Specify the date of the session you want to process,
-                            e.g. "2019-31-05".
-      -o OUT_DIR, --out-dir OUT_DIR
-                            Absolute path - location to store created output
-                            pdf's. Defaults to session folder given by --date-tag
-                            field.
-```
+#### scripts
+There are couple of convenience scripts in ```planvec/scripts``` folder. For example the ```single_shot_planvec.py``` to run planvec on a single shot image taken with the camera without any GUI.
 
 #### color_filter_app.py
 ```python color_filter_app.py```  
 A utility tool to filter out color (ranges) from the webcam input. Can be used to determine the 
-HSV values for color filters when doing image processing.
+HSV values for color filters when doing image processing. Note to set the camera index in the script correctly.
 
 ### How-To Laser Cut
 The pdf_jammer command line tool informs you about the location of the created pdf's. This is how you laser-cut them.
