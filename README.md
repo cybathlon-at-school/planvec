@@ -14,7 +14,7 @@ Vectorizes a captured image of a drawn construction plan component.
     libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev \
     xz-utils tk-dev libffi-dev liblzma-dev python-openssl
    ```
-2) Install python 3.6.9 with pyenv ```pyenv install 3.6.9```
+2) Install python 3.6.9 with pyenv ```pyenv install 3.8.6```
 3) Install **pipenv** and do ```pipenv install``` before ```pipenv shell``` inside planvec.  
     For instructions, see https://github.com/pypa/pipenv.
 4) Go to your cloned repo and do ```pipenv install``` and ```pipenv shell```.
