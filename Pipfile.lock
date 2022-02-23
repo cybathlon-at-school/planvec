@@ -1399,11 +1399,11 @@
         },
         "qt-material": {
             "hashes": [
-                "sha256:0440078277909627be79709e5f77acb66cbc84dec27a7107abc5d8826e2f4598",
-                "sha256:ef2c708dc419adaf3eb804ca9af6ad537edb13c69f22acf88f99b31c8317b593"
+                "sha256:218dbc896331e466d69da845bf5c0067a998ecee92de62849fd965ccc7cac542",
+                "sha256:7240507a9f83425e9379d3d9781201d0e32d7a859b39bc728d492e3435daa4bc"
             ],
             "index": "pypi",
-            "version": "==2.8.19"
+            "version": "==2.9"
         },
         "qtconsole": {
             "hashes": [

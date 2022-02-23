@@ -12,8 +12,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1289</width>
-    <height>840</height>
+    <width>1298</width>
+    <height>835</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -666,7 +666,7 @@ padding-left: 10;</string>
        <x>0</x>
        <y>0</y>
        <width>281</width>
-       <height>621</height>
+       <height>501</height>
       </rect>
      </property>
      <layout class="QGridLayout" name="gridLayoutSettings">
@@ -694,7 +694,7 @@ padding-left: 10;</string>
       <item row="1" column="0">
        <widget class="QGroupBox" name="groupCamera">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -1253,7 +1253,7 @@ padding-left: 10;</string>
       <item row="2" column="0">
        <widget class="QGroupBox" name="infoBoxInput">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Ignored" vsizetype="Expanding">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -1932,7 +1932,7 @@ padding-left: 10;</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1289</width>
+     <width>1298</width>
      <height>22</height>
     </rect>
    </property>
