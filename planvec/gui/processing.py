@@ -58,7 +58,6 @@ class ImgProcessThread(QtCore.QThread):
 
     def toggle_stopped(self):
         self.stopped = not self.stopped
-        print(f"Toggled stop video. Currently: {'STOPPED' if self.stopped else 'RUNNING'}")
 
     def set_input_width(self, width_cm) -> None:
         _, current_height_inches = self.processing_config.out_size_inches
@@ -94,7 +93,6 @@ class ImgProcessThread(QtCore.QThread):
     @QtCore.pyqtSlot()
     def toggle_canny_slot(self) -> None:
         self.do_canny = not self.do_canny
-        print(f"Toggled canny. Currently doing canny? {'YES' if self.do_canny else 'NO'}")
 
     @staticmethod
     def process_frame(img, processing_config: DotMap, color_ranges: dict, do_canny: bool, ax: plt.Axes) -> (plt.Axes, QImage):

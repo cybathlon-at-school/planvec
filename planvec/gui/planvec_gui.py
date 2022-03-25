@@ -13,13 +13,15 @@ from planvec.gui.error_msg_box import ErrorMsgBox
 from planvec.gui.team_dir_dialog import TeamDirDialog
 from planvec.gui.ui_generated.planvec_ui import Ui_planvec
 from planvec.gui.video_stream import FrameBuffer, VideoStreamThread
-from planvec.pdf_jammer import PdfJammer
+from planvec.pdf_jammer import PdfJammer, PdfAndPlateSizeIncompatibleException
 from planvec.utils.date_utils import get_date_tag
 from planvec.utils.camera_utils import get_physical_camera_device_indices
 from planvec.planvec_paths import DATA_DESKTOP_DIR_PATH
 
 from dotmap import DotMap
 from typing import Tuple
+
+from planvec.utils.qt_utils import get_text_or_placeholder_text
 
 
 class PlanvecGui:
@@ -234,7 +236,17 @@ class PlanvecGui:
 
         if button_return.text() == '&OK':
             pdf_jammer = PdfJammer(data_manager=self.data_manager,
-                                   out_dir_path=DATA_DESKTOP_DIR_PATH / get_date_tag())
+                                   out_dir_path=DATA_DESKTOP_DIR_PATH / get_date_tag(),
+                                   plate_width=int(get_text_or_placeholder_text(self.ui.outputSizeWidth)),
+                                   plate_height=int(get_text_or_placeholder_text(self.ui.outputSizeHeight)),
+                                   pdf_width=int(get_text_or_placeholder_text(self.ui.inputSizeWidth)),
+                                   pdf_height=int(get_text_or_placeholder_text(self.ui.inputSizeHeight)))
+            try:
+                pdf_jammer.validate_pdf_and_plate_sizes_compatibility()
+            except PdfAndPlateSizeIncompatibleException as exception:
+                error_box = ErrorMsgBox(exception.message)
+                error_box.execute()
+                return
 
             school_name = self.ui.schoolName_2.text()
             team_name = self.ui.teamName_2.text()
