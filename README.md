@@ -2,7 +2,10 @@
 Vectorizes a captured image of a drawn construction plan component.
 
 ## Installation
-Tested on Ubuntu 20.04.
+
+V0.0.8 for Ubuntu 22.04 LTS 
+V0.0.7 for Ubuntu 20.04. LTS
+https://github.com/cybathlon-at-school/planvec/releases
 
 ### For End-Users
 1) Install **pdfunite** (contained in poppler-utils)  
